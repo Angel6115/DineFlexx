@@ -6,23 +6,24 @@ const menuData = {
     { nombre: "Bruschetta", precio: 7.5, imagen: "/images/comidas/bruschetta.jpg" },
     { nombre: "Paella", precio: 14.99, imagen: "/images/comidas/paella.jpg" },
     { nombre: "Pasta", precio: 11.5, imagen: "/images/comidas/pasta.jpg" },
-    { nombre: "Hamburguesa Gourmet", precio: 13.99, imagen: "/images/comidas/hamburguesa.jpg" },
-    { nombre: "Ensalada César", precio: 9.25, imagen: "/images/comidas/ensalada.jpg" },
-    { nombre: "Pizza Margherita", precio: 12.0, imagen: "/images/comidas/pizza.jpg" }
+    { nombre: "Risotto", precio: 13.0, imagen: "/images/comidas/risotto.jpg" },
+    { nombre: "Sopa de Tomate", precio: 8.0, imagen: "/images/comidas/sopa-tomate.jpg" },
+    { nombre: "Tacos", precio: 10.0, imagen: "/images/comidas/tacos.jpg" },
+    { nombre: "Tostones", precio: 6.5, imagen: "/images/comidas/tostones.jpg" },
+    { nombre: "Tomahawk", precio: 24.99, imagen: "/images/comidas/tomahawk.jpg" }
   ],
   bebidas: [
+    { nombre: "Cabernet", precio: 6.5, imagen: "/images/bebidas/cabernet.jpg" },
+    { nombre: "Coca Cola", precio: 2.0, imagen: "/images/bebidas/coca_cola.jpg" },
+    { nombre: "Jugo de China", precio: 3.0, imagen: "/images/bebidas/jugo_china.jpg" },
     { nombre: "Limonada", precio: 3.5, imagen: "/images/bebidas/limonada.jpg" },
-    { nombre: "Mojito", precio: 5.5, imagen: "/images/bebidas/mojito.jpg" },
-    { nombre: "Café Espresso", precio: 2.75, imagen: "/images/bebidas/espresso.jpg" },
-    { nombre: "Té Helado", precio: 3.25, imagen: "/images/bebidas/te-helado.jpg" },
-    { nombre: "Jugo Natural", precio: 2.5, imagen: "/images/bebidas/jugo-natural.jpg" },
-    { nombre: "Agua Mineral", precio: 2.0, imagen: "/images/bebidas/agua.jpg" }
+    { nombre: "Moet", precio: 10.0, imagen: "/images/bebidas/moet.jpg" },
+    { nombre: "Pinot Grigio", precio: 7.0, imagen: "/images/bebidas/pinot.jpg" },
+    { nombre: "Rose", precio: 5.5, imagen: "/images/bebidas/rose.jpg" }
   ],
   postres: [
     { nombre: "Flan", precio: 4.0, imagen: "/images/postres/flan.jpg" },
-    { nombre: "Tiramisú", precio: 4.75, imagen: "/images/postres/tiramisu.jpg" },
-    { nombre: "Cheesecake", precio: 5.0, imagen: "/images/postres/cheesecake.jpg" },
-    { nombre: "Brownie con Helado", precio: 5.25, imagen: "/images/postres/brownie.jpg" }
+    { nombre: "Tiramisú", precio: 4.75, imagen: "/images/postres/tiramisu.jpg" }
   ]
 }
 
