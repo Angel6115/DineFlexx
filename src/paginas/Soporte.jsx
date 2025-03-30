@@ -1,37 +1,86 @@
-import React from 'react';
+import { useEffect, useState } from "react"
+import { supabase } from "../supabaseClient"
 
 export default function Soporte() {
+  const [message, setMessage] = useState("")
+  const [status, setStatus] = useState(null)
+  const [userId, setUserId] = useState(null)
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+        error
+      } = await supabase.auth.getUser()
+
+      if (error || !user) {
+        console.error("❌ Error al obtener usuario:", error?.message)
+        setStatus("no-user")
+      } else {
+        setUserId(user.id)
+      }
+    }
+    getUser()
+  }, [])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setStatus("loading")
+
+    if (!userId) return setStatus("no-user")
+
+    const { error } = await supabase.from("support_tickets").insert({
+      user_id: userId,
+      message
+    })
+
+    if (error) {
+      console.error("❌ Error al enviar soporte:", error.message)
+      setStatus("error")
+    } else {
+      setStatus("success")
+      setMessage("")
+    }
+  }
+
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10 bg-[#fdfaf6] min-h-screen">
-      <h1 className="text-3xl font-bold text-[#673ab7] mb-6 text-center">Soporte al Cliente</h1>
+    <div className="max-w-3xl mx-auto px-4 py-8 font-sans">
+      <h1 className="text-3xl font-bold mb-6 text-center">🛠️ Centro de Soporte</h1>
 
-      <div className="bg-white rounded-xl shadow p-6 space-y-6">
-        <section>
-          <h2 className="text-xl font-semibold text-[#f4b400] mb-2">Preguntas Frecuentes</h2>
-          <ul className="list-disc ml-6 text-gray-700 space-y-2">
-            <li>
-              <strong>¿Cómo puedo usar mi crédito en DineFlexx?</strong>
-              <p>Puedes usar tu crédito aprobado al momento de confirmar tu pedido en el checkout.</p>
-            </li>
-            <li>
-              <strong>¿Puedo compartir mi crédito?</strong>
-              <p>Sí, desde tu perfil puedes compartir crédito con hasta 3 personas.</p>
-            </li>
-            <li>
-              <strong>¿Dónde puedo ver mis puntos acumulados?</strong>
-              <p>Están disponibles en la sección "Perfil".</p>
-            </li>
-          </ul>
-        </section>
+      <div className="bg-white shadow-lg rounded-2xl p-6">
+        <p className="text-gray-700 mb-4">
+          ¿Tienes preguntas o necesitas ayuda? Envía tu mensaje al equipo de DineFlexx y te contactaremos pronto.
+        </p>
 
-        <section>
-          <h2 className="text-xl font-semibold text-[#f4b400] mb-2">¿Necesitás ayuda directa?</h2>
-          <p className="text-gray-700">Podés escribirnos a <a href="mailto:soporte@dineflexx.com" className="text-[#673ab7] underline">soporte@dineflexx.com</a> o usar el botón abajo.</p>
-          <button className="mt-4 bg-[#f4b400] hover:bg-[#e4a500] text-white font-semibold px-4 py-2 rounded-full">
-            Contactar Soporte
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <textarea
+            rows="5"
+            className="w-full p-3 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Escribe tu mensaje aquí..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            required
+          ></textarea>
+
+          <button
+            type="submit"
+            disabled={status === "loading"}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-xl shadow"
+          >
+            {status === "loading" ? "Enviando..." : "Enviar Soporte"}
           </button>
-        </section>
+
+          {status === "success" && (
+            <p className="text-green-600 mt-2">✅ Mensaje enviado correctamente</p>
+          )}
+          {status === "error" && (
+            <p className="text-red-600 mt-2">❌ Error al enviar el mensaje. Intenta nuevamente.</p>
+          )}
+          {status === "no-user" && (
+            <p className="text-yellow-600 mt-2">⚠️ Debes iniciar sesión para enviar un mensaje.</p>
+          )}
+        </form>
       </div>
     </div>
-  );
+  )
 }
