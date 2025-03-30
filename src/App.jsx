@@ -13,7 +13,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Soporte />} />
           <Route path="/perfil" element={<Perfil />} />
-          <Route path="/menu" element={<Menu />} />
+          <Route path="/menu" element={<Menu credit={1500} puntosIniciales={0} />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </div>
@@ -22,3 +22,4 @@ function App() {
 }
 
 export default App
+
