@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Dashboard from "./Dashboard"
 import Perfil from "./Perfil"
-import Menu from "./Menu"
+import Menu from "./paginas/Menu"
 import Soporte from "./paginas/Soporte"
 import Navbar from "./components/Navbar"
 
