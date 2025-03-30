@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { supabase } from "./supabaseClient"
+import { supabase } from "../supabaseClient"
 
 const menuData = {
   comidas: [
@@ -15,6 +15,7 @@ const menuData = {
     { nombre: "Limonada", precio: 3.5, imagen: "/images/bebidas/limonada.jpg" },
     { nombre: "Mojito", precio: 5.5, imagen: "/images/bebidas/mojito.jpg" },
     { nombre: "Coca Cola", precio: 2.75, imagen: "/images/bebidas/coca_cola.jpg" },
+    { nombre: "Té Helado", precio: 3.25, imagen: "/images/bebidas/te_helado.jpg" },
     { nombre: "Cabernet", precio: 4.0, imagen: "/images/bebidas/cabernet.jpg" },
     { nombre: "Jugo China", precio: 2.5, imagen: "/images/bebidas/jugo_china.jpg" },
     { nombre: "Jugo Uva", precio: 2.5, imagen: "/images/bebidas/jugo_uva.jpg" },
