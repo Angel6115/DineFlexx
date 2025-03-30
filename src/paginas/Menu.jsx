@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { supabase } from "../../supabaseClient"
-<div styleName={} />supabaseClient"
 
 const menuData = {
   comidas: [

@@ -1,21 +1,27 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Dashboard from "./Dashboard"
+import Login from "./Login"
+import Register from "./Register"
 import Perfil from "./Perfil"
+import Soporte from "./Soporte"
 import Menu from "./paginas/Menu"
-import Soporte from "./paginas/Soporte"
 import Navbar from "./components/Navbar"
+import LogoutButton from "./components/LogoutButton"
 
 function App() {
   return (
     <Router>
-      <Navbar />
-      <div className="p-6">
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
         <Routes>
-          <Route path="/" element={<Soporte />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/perfil" element={<Perfil />} />
-          <Route path="/menu" element={<Menu credit={1500} puntosIniciales={0} />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/soporte" element={<Soporte />} />
+          <Route path="/menu" element={<Menu />} />
         </Routes>
+        <LogoutButton />
       </div>
     </Router>
   )
