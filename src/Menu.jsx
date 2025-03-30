@@ -21,6 +21,7 @@ function Menu() {
   const [orden, setOrden] = useState([])
   const [fecha, setFecha] = useState("")
   const [hora, setHora] = useState("")
+  const [mostrarReserva, setMostrarReserva] = useState(false)
 
   const handleAgregar = (item) => {
     setOrden([...orden, item])
@@ -73,33 +74,47 @@ function Menu() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">🍽️ DineFlexx - Menú</h1>
-
-      {renderSeccion("Comidas", menuData.comidas)}
-      {renderSeccion("Bebidas", menuData.bebidas)}
-      {renderSeccion("Postres", menuData.postres)}
-
-      <div className="mt-10 p-4 bg-white rounded-xl shadow w-full max-w-md mx-auto">
-        <h2 className="text-lg font-semibold mb-4">Reservar en Dine Restaurant</h2>
-        <input
-          type="date"
-          value={fecha}
-          onChange={(e) => setFecha(e.target.value)}
-          className="w-full mb-2 px-3 py-2 border rounded"
-        />
-        <input
-          type="time"
-          value={hora}
-          onChange={(e) => setHora(e.target.value)}
-          className="w-full mb-4 px-3 py-2 border rounded"
-        />
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">🍽️ DineFlexx - Menú</h1>
         <button
-          onClick={handleReserva}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          onClick={() => setMostrarReserva(!mostrarReserva)}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Reservar aquí
+          {mostrarReserva ? "Cerrar reserva" : "Reservar"}
         </button>
       </div>
+
+      {!mostrarReserva && (
+        <>
+          {renderSeccion("Comidas", menuData.comidas)}
+          {renderSeccion("Bebidas", menuData.bebidas)}
+          {renderSeccion("Postres", menuData.postres)}
+        </>
+      )}
+
+      {mostrarReserva && (
+        <div className="mt-10 p-4 bg-white rounded-xl shadow w-full max-w-md mx-auto">
+          <h2 className="text-lg font-semibold mb-4">Reservar en Dine Restaurant</h2>
+          <input
+            type="date"
+            value={fecha}
+            onChange={(e) => setFecha(e.target.value)}
+            className="w-full mb-2 px-3 py-2 border rounded"
+          />
+          <input
+            type="time"
+            value={hora}
+            onChange={(e) => setHora(e.target.value)}
+            className="w-full mb-4 px-3 py-2 border rounded"
+          />
+          <button
+            onClick={handleReserva}
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          >
+            Reservar aquí
+          </button>
+        </div>
+      )}
     </div>
   )
 }
