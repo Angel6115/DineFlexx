@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { supabase } from "./supabaseClient"
-import LogoutButton from "./components/LogoutButton"
+import { supabase } from "../supabaseClient"
+import LogoutButton from "../components/LogoutButton"
 
 export default function Perfil() {
   const [loading, setLoading] = useState(true)
@@ -8,6 +8,8 @@ export default function Perfil() {
   const [credit, setCredit] = useState(null)
   const [selectedPrefs, setSelectedPrefs] = useState([])
   const [userId, setUserId] = useState(null)
+  const [email, setEmail] = useState("")
+  const [createdAt, setCreatedAt] = useState("")
 
   const CATEGORIES = [
     "Vegano",
@@ -34,6 +36,8 @@ export default function Perfil() {
       }
 
       setUserId(user.id)
+      setEmail(user.email)
+      setCreatedAt(user.created_at.split("T")[0])
 
       const { data: prefs, error: prefsError } = await supabase
         .from("user_preferences")
@@ -106,9 +110,13 @@ export default function Perfil() {
 
       <div className="bg-white shadow rounded-2xl p-6 mb-6">
         <h2 className="text-xl font-semibold mb-2">Crédito Disponible</h2>
-        <p className="text-2xl text-green-600 font-bold">
-          ${credit ?? 0}
-        </p>
+        <p className="text-2xl text-green-600 font-bold">${credit ?? 0}</p>
+      </div>
+
+      <div className="bg-white shadow rounded-2xl p-6 mb-6">
+        <h2 className="text-xl font-semibold mb-2">Datos del Usuario</h2>
+        <p><strong>Email:</strong> {email}</p>
+        <p><strong>Registrado desde:</strong> {createdAt}</p>
       </div>
 
       <div className="bg-white shadow rounded-2xl p-6">
