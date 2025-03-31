@@ -26,6 +26,7 @@ function App() {
           <Route path="/referidos" element={<Referidos />} />
           <Route path="/reservas" element={<HistorialReservas />} />
           <Route path="/logros" element={<Logros />} />
+          <Route path="/referidos" element={<Referidos />} />
         </Routes>
         <LogoutButton />
       </div>

@@ -1,6 +1,39 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../supabaseClient"
 
+function CreditHistory({ userId }) {
+  const [history, setHistory] = useState([])
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      const { data, error } = await supabase
+        .from("credit_history")
+        .select("fecha, monto, descripcion")
+        .eq("user_id", userId)
+        .order("fecha", { ascending: false })
+
+      if (!error) setHistory(data)
+    }
+    if (userId) fetchHistory()
+  }, [userId])
+
+  if (!history.length) return null
+
+  return (
+    <div className="bg-white p-6 rounded-2xl shadow-md mt-8">
+      <h2 className="text-xl font-semibold mb-4">📋 Historial de Crédito</h2>
+      <ul className="divide-y divide-gray-200 text-sm">
+        {history.map((item, idx) => (
+          <li key={idx} className="py-2 flex justify-between">
+            <span>{new Date(item.fecha).toLocaleDateString()} - {item.descripcion}</span>
+            <span className="font-bold text-red-500">-${item.monto}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export default function Referidos() {
   const [userId, setUserId] = useState(null)
   const [refCode, setRefCode] = useState("")
@@ -120,7 +153,9 @@ export default function Referidos() {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-md">
+      <CreditHistory userId={userId} />
+
+      <div className="bg-white p-6 rounded-2xl shadow-md mt-10">
         <h2 className="text-xl font-semibold mb-2">🤖 Asistente Gastronómico</h2>
         <form onSubmit={handleAiSubmit} className="space-y-4">
           <input
