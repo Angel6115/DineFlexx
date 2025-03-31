@@ -33,6 +33,8 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
   const [mostrarReserva, setMostrarReserva] = useState(false)
   const [puntos, setPuntos] = useState(puntosIniciales)
   const [creditoRestante, setCreditoRestante] = useState(credit)
+  const [planPago, setPlanPago] = useState("4-semanas")
+  const [propina, setPropina] = useState(0.2)
 
   const navigate = useNavigate()
 
@@ -62,8 +64,8 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
         fecha,
         hora,
         items: orden,
-        propina: 18,
-        total: orden.reduce((acc, item) => acc + item.precio, 0)
+        propina: propina * 100,
+        total: totalOrden.toFixed(2)
       }
     ])
     if (!error) {
@@ -75,105 +77,131 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
   const totalOrden = orden.reduce((acc, item) => acc + item.precio, 0)
   const cuotaInicial = totalOrden * 0.2
   const restante = totalOrden - cuotaInicial
-  const cuotasMensuales = (restante / 6).toFixed(2)
+
+  const cuotas = planPago === "4-semanas"
+    ? { label: "4 pagos semanales", monto: (restante / 4).toFixed(2), plazos: 4 }
+    : { label: `${planPago.split("-")[1]} pagos mensuales`, monto: (restante / parseInt(planPago.split("-")[1])).toFixed(2), plazos: parseInt(planPago.split("-")[1]) }
 
   return (
-    <div className="p-4 max-w-7xl mx-auto font-sans">
-      <div className="flex items-center gap-4 mb-6">
-        <img
-          src="/images/logo1.jpg"
-          alt="DineFlexx"
-          className="h-12 w-12 object-contain shadow rounded"
-        />
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">DineFlexx Restaurant</h1>
-      </div>
-
-      <div className="bg-white p-6 rounded-2xl shadow-xl mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-lg md:text-xl font-semibold">
-            💰 Crédito Disponible: <span className="text-green-600">${creditoRestante.toFixed(2)}</span>
-          </p>
-          <p className="text-lg md:text-xl font-semibold">
-            🎁 Puntos Acumulados: <span className="text-blue-600">{puntos}</span>
-          </p>
-        </div>
-        <button
-          onClick={() => setMostrarReserva(!mostrarReserva)}
-          className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-5 py-2 md:py-3 rounded-xl mt-4 md:mt-0 font-semibold shadow-lg hover:scale-105 transition"
-        >
-          Reservar
-        </button>
-      </div>
-
-      {mostrarReserva && (
-        <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
-          <h2 className="text-2xl font-semibold mb-4">🗕️ Reservar en Dine Restaurant</h2>
-          <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
-            <input
-              type="date"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              className="p-3 border rounded-xl shadow-sm"
-            />
-            <input
-              type="time"
-              value={hora}
-              onChange={(e) => setHora(e.target.value)}
-              className="p-3 border rounded-xl shadow-sm"
-            />
+    <div className="max-w-7xl mx-auto font-sans">
+      {/* Info fija */}
+      <div className="sticky top-0 z-10 bg-gray-50 px-4 py-4 shadow">
+        <div className="flex justify-between items-center">
+          <div className="flex gap-4 items-center">
+            <img src="/images/logo1.jpg" alt="DineFlexx" className="h-10 w-10 object-contain rounded shadow" />
+            <h1 className="text-xl font-bold">DineFlexx Restaurant</h1>
           </div>
-          <button
-            onClick={handleReserva}
-            className="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition font-semibold"
-          >
-            💳 Confirmar y Pagar
-          </button>
+          <div className="text-right">
+            <p className="text-sm font-semibold">💰 Crédito: <span className="text-green-600">${creditoRestante.toFixed(2)}</span></p>
+            <p className="text-sm font-semibold">🎁 Puntos: <span className="text-blue-600">{puntos}</span></p>
+          </div>
         </div>
-      )}
+      </div>
 
-      {orden.length > 0 && (
-        <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
-          <h2 className="text-xl font-bold mb-2">🧾 Resumen del Pedido</h2>
-          <ul className="mb-3 text-gray-700">
-            {orden.map((item, index) => (
-              <li key={index}>
-                {item.nombre} - ${item.precio.toFixed(2)}
-              </li>
-            ))}
-          </ul>
-          <p>Total: <strong>${totalOrden.toFixed(2)}</strong></p>
-          <p>Cuota Inicial (20%): <strong>${cuotaInicial.toFixed(2)}</strong></p>
-          <p>6 pagos mensuales de: <strong>${cuotasMensuales}</strong></p>
-        </div>
-      )}
+      {/* Contenido scrollable */}
+      <div className="px-4 pb-16 pt-6">
+        {orden.length > 0 && (
+          <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
+            <h2 className="text-xl font-bold mb-2">🧾 Resumen del Pedido</h2>
+            <ul className="mb-3 text-gray-700">
+              {orden.map((item, index) => (
+                <li key={index}>{item.nombre} - ${item.precio.toFixed(2)}</li>
+              ))}
+            </ul>
+            <p>Total: <strong>${totalOrden.toFixed(2)}</strong></p>
+            <p>Propina: <strong>{(propina * 100)}%</strong></p>
+            <p>Cuota Inicial (20%): <strong>${cuotaInicial.toFixed(2)}</strong></p>
+            <p>{cuotas.label} de: <strong>${cuotas.monto}</strong></p>
 
-      {Object.entries(menuData).map(([seccion, items]) => (
-        <div key={seccion} className="mb-14">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 capitalize text-gray-800">{seccion}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {items.map((item, idx) => (
-              <div
-                key={idx}
-                className="bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition flex flex-col justify-between"
-              >
-                <img
-                  src={item.imagen}
-                  alt={item.nombre}
-                  className="h-40 md:h-48 w-full object-contain rounded-xl mb-4"
-                />
-                <h3 className="text-lg md:text-xl font-semibold mb-1">{item.nombre}</h3>
-                <p className="text-blue-600 font-bold text-md md:text-lg mb-3">${item.precio.toFixed(2)}</p>
-                <button
-                  onClick={() => handleAgregar(item)}
-                  className="bg-blue-600 text-white w-full py-2 rounded-xl hover:bg-blue-700 font-medium"
+            <button
+              onClick={() => setMostrarReserva(true)}
+              className="mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white w-full py-3 rounded-xl font-semibold hover:scale-105 transition"
+            >
+              💳 Ir al Pago
+            </button>
+          </div>
+        )}
+
+        {mostrarReserva && (
+          <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
+            <h2 className="text-2xl font-semibold mb-4">📅 Finalizar Compra</h2>
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-4">
+              <input
+                type="date"
+                value={fecha}
+                onChange={(e) => setFecha(e.target.value)}
+                className="p-3 border rounded-xl shadow-sm"
+              />
+              <input
+                type="time"
+                value={hora}
+                onChange={(e) => setHora(e.target.value)}
+                className="p-3 border rounded-xl shadow-sm"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block font-semibold mb-2">💸 Propina</label>
+              <select value={propina} onChange={(e) => setPropina(parseFloat(e.target.value))} className="w-full p-3 border rounded-xl">
+                <option value={0.2}>20%</option>
+                <option value={0.25}>25%</option>
+                <option value={0.3}>30%</option>
+              </select>
+            </div>
+
+            <div className="mb-4">
+              <label className="block font-semibold mb-2">📆 Plan de Pago</label>
+              <select value={planPago} onChange={(e) => setPlanPago(e.target.value)} className="w-full p-3 border rounded-xl">
+                <option value="4-semanas">Semanal (4 pagos)</option>
+                <option value="1-meses">Mensual (1 mes)</option>
+                <option value="2-meses">Mensual (2 meses)</option>
+                <option value="3-meses">Mensual (3 meses)</option>
+                <option value="4-meses">Mensual (4 meses)</option>
+              </select>
+            </div>
+
+            <button
+              onClick={handleReserva}
+              disabled={!fecha || !hora}
+              className={`w-full mt-4 py-3 rounded-xl font-semibold transition ${
+                fecha && hora
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+            >
+              💰 Confirmar y Pagar
+            </button>
+          </div>
+        )}
+
+        {Object.entries(menuData).map(([seccion, items]) => (
+          <div key={seccion} className="mb-14">
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 capitalize text-gray-800">{seccion}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {items.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition flex flex-col justify-between"
                 >
-                  + Agregar
-                </button>
-              </div>
-            ))}
+                  <img
+                    src={item.imagen}
+                    alt={item.nombre}
+                    className="h-40 md:h-48 w-full object-contain rounded-xl mb-4"
+                  />
+                  <h3 className="text-lg md:text-xl font-semibold mb-1">{item.nombre}</h3>
+                  <p className="text-blue-600 font-bold text-md md:text-lg mb-3">${item.precio.toFixed(2)}</p>
+                  <button
+                    onClick={() => handleAgregar(item)}
+                    className="bg-blue-600 text-white w-full py-2 rounded-xl hover:bg-blue-700 font-medium"
+                  >
+                    + Agregar
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
