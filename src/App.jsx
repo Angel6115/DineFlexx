@@ -1,15 +1,14 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import Dashboard from "./Dashboard.jsx"
-import Login from "./Login.jsx"
-import Register from "./Register.jsx"
-import Perfil from "./Perfil.jsx"
-import Menu from "./Menu.jsx"
-import Soporte from "./SupportForm.jsx"
-import Referidos from "./Referidos.jsx"
-import Checkout from "./Checkout.jsx"
-
-import Navbar from "./components/Navbar.jsx"
-import LogoutButton from "./components/LogoutButton.jsx"
+import Dashboard from "./Dashboard"
+import Login from "./Login"
+import Register from "./Register"
+import Perfil from "./Perfil"
+import Menu from "./paginas/Menu"
+import Soporte from "./paginas/Soporte"
+import Referidos from "./Referidos"
+import Checkout from "./paginas/Checkout"
+import Navbar from "./components/Navbar"
+import LogoutButton from "./components/LogoutButton"
 
 function App() {
   return (
