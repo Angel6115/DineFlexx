@@ -3,12 +3,11 @@ import Dashboard from "./Dashboard"
 import Login from "./Login"
 import Register from "./Register"
 import Perfil from "./Perfil"
-import Menu from "./paginas/Menu"
-import Soporte from "./paginas/Soporte"
 import Referidos from "./Referidos"
-import Checkout from "./paginas/Checkout"
+import Soporte from "./SupportForm"
+import Menu from "./paginas/Menu"
 import Navbar from "./components/Navbar"
-import LogoutButton from "./components/LogoutButton"
+import Checkout from "./Checkout"
 
 function App() {
   return (
@@ -20,12 +19,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/perfil" element={<Perfil />} />
-          <Route path="/menu" element={<Menu />} />
-          <Route path="/soporte" element={<Soporte />} />
           <Route path="/referidos" element={<Referidos />} />
+          <Route path="/soporte" element={<Soporte />} />
+          <Route path="/menu" element={<Menu />} />
           <Route path="/checkout" element={<Checkout />} />
         </Routes>
-        <LogoutButton />
       </div>
     </Router>
   )
