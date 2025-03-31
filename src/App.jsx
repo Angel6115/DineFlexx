@@ -5,6 +5,7 @@ import Register from "./Register"
 import Perfil from "./Perfil"
 import Soporte from "./paginas/Soporte"
 import Menu from "./paginas/Menu"
+import Referidos from "./paginas/Referidos"
 import Navbar from "./components/Navbar"
 import LogoutButton from "./components/LogoutButton"
 
@@ -20,6 +21,7 @@ function App() {
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/soporte" element={<Soporte />} />
           <Route path="/menu" element={<Menu />} />
+          <Route path="/referidos" element={<Referidos />} />
         </Routes>
         <LogoutButton />
       </div>
