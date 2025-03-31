@@ -69,11 +69,32 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
     }
   }
 
+  const totalOrden = orden.reduce((acc, item) => acc + item.precio, 0)
+  const cuotaInicial = totalOrden * 0.2
+  const restante = totalOrden - cuotaInicial
+  const cuotasMensuales = (restante / 6).toFixed(2)
+
   return (
     <div className="p-4 max-w-7xl mx-auto font-sans">
       <div className="flex items-center gap-4 mb-6">
         <img src="/images/logo1.jpg" alt="DineFlexx" className="h-12 w-12 object-contain shadow rounded" />
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">DineFlexx Restaurant</h1>
+      </div>
+
+      <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
+        <h2 className="text-2xl font-semibold mb-4">🛒 Tu Orden</h2>
+        {orden.length === 0 ? (
+          <p className="text-gray-600">Aún no has agregado platos.</p>
+        ) : (
+          <ul className="mb-4">
+            {orden.map((item, idx) => (
+              <li key={idx} className="text-gray-800">• {item.nombre} - ${item.precio.toFixed(2)}</li>
+            ))}
+          </ul>
+        )}
+        <p className="text-lg font-semibold text-green-700">Total: ${totalOrden.toFixed(2)}</p>
+        <p className="text-md mt-2 text-gray-700">💸 Cuota Inicial (20%): <span className="text-black font-medium">${cuotaInicial.toFixed(2)}</span></p>
+        <p className="text-md text-gray-700">📆 Pago Mensual (6 meses): <span className="text-black font-medium">${cuotasMensuales}</span></p>
       </div>
 
       <div className="bg-white p-6 rounded-2xl shadow-xl mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
@@ -95,7 +116,7 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
 
       {mostrarReserva && (
         <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
-          <h2 className="text-2xl font-semibold mb-4">🗕️ Reservar en Dine Restaurant</h2>
+          <h2 className="text-2xl font-semibold mb-4">🗓️ Reservar en Dine Restaurant</h2>
           <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
             <input
               type="date"
