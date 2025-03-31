@@ -6,7 +6,6 @@ import Perfil from "./Perfil"
 import Menu from "./paginas/Menu"
 import Soporte from "./paginas/Soporte"
 import Referidos from "./Referidos"
-import Logros from "./Logros"
 import Navbar from "./components/Navbar"
 import LogoutButton from "./components/LogoutButton"
 
@@ -23,7 +22,6 @@ function App() {
           <Route path="/menu" element={<Menu />} />
           <Route path="/soporte" element={<Soporte />} />
           <Route path="/referidos" element={<Referidos />} />
-          <Route path="/logros" element={<Logros />} />
         </Routes>
         <LogoutButton />
       </div>
