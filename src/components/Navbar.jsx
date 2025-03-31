@@ -5,19 +5,18 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path
 
   return (
-    <nav className="bg-black text-white px-4 py-3 shadow-md">
+    <nav className="bg-gradient-to-r from-purple-900 to-indigo-900 text-white px-4 py-3 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
-        
         {/* Logo */}
-        <Link to="/" className="flex items-center">
+        <Link to="/" className="flex items-center gap-3">
           <img
-            src="/images/logo1.jpg"
-            alt="DineFlexx Logo"
+            src="/images/logo4.png"
+            alt="DineFlexx"
             className="h-10 w-auto object-contain"
           />
         </Link>
 
-        {/* Navigation Links */}
+        {/* Links */}
         <div className="flex flex-wrap gap-2 justify-center md:justify-end text-sm sm:text-base">
           <NavLink path="/" label="Inicio" isActive={isActive} />
           <NavLink path="/menu" label="Menú" isActive={isActive} />

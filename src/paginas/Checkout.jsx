@@ -85,11 +85,11 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
   return (
     <div className="max-w-7xl mx-auto font-sans">
       {/* Info fija */}
-      <div className="sticky top-0 z-10 bg-gray-50 px-4 py-4 shadow">
+      <div className="sticky top-0 z-10 bg-white px-4 py-4 shadow border-b">
         <div className="flex justify-between items-center">
           <div className="flex gap-4 items-center">
-            <img src="/images/logo1.jpg" alt="DineFlexx" className="h-10 w-10 object-contain rounded shadow" />
-            <h1 className="text-xl font-bold">DineFlexx Restaurant</h1>
+            <img src="/images/logo3.png" alt="DineFlexx" className="h-10 w-auto object-contain" />
+            <h1 className="text-xl font-bold text-gray-700">Bienvenido a DineFlexx</h1>
           </div>
           <div className="text-right">
             <p className="text-sm font-semibold">💰 Crédito: <span className="text-green-600">${creditoRestante.toFixed(2)}</span></p>
@@ -101,7 +101,7 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
       {/* Contenido scrollable */}
       <div className="px-4 pb-16 pt-6">
         {orden.length > 0 && (
-          <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
+          <div className="bg-white p-6 rounded-2xl shadow-xl mb-6 sticky top-20 z-10">
             <h2 className="text-xl font-bold mb-2">🧾 Resumen del Pedido</h2>
             <ul className="mb-3 text-gray-700">
               {orden.map((item, index) => (
