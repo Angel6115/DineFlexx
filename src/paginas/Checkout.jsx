@@ -1,93 +1,171 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../supabaseClient"
 
-export default function Checkout() {
-  const [user, setUser] = useState(null)
-  const [credit, setCredit] = useState(0)
-  const [cartTotal, setCartTotal] = useState(100) // Simulación del total de compra
-  const [fee, setFee] = useState(0)
-  const [totalWithFee, setTotalWithFee] = useState(0)
-  const [plan, setPlan] = useState("semanal")
-  const [installments, setInstallments] = useState([])
+const menuData = {
+  comidas: [
+    { nombre: "Bruschetta", precio: 7.5, imagen: "/images/comidas/bruschetta.jpg" },
+    { nombre: "Paella", precio: 14.99, imagen: "/images/comidas/paella.jpg" },
+    { nombre: "Pasta", precio: 11.5, imagen: "/images/comidas/pasta.jpg" },
+    { nombre: "Sopa de Tomate", precio: 6.25, imagen: "/images/comidas/sopa-tomate.jpg" },
+    { nombre: "Tacos", precio: 9.5, imagen: "/images/comidas/tacos.jpg" },
+    { nombre: "Tomahawk", precio: 24.99, imagen: "/images/comidas/tomahawk.jpg" }
+  ],
+  bebidas: [
+    { nombre: "Limonada", precio: 3.5, imagen: "/images/bebidas/limonada.jpg" },
+    { nombre: "Mojito", precio: 5.5, imagen: "/images/bebidas/mojito.jpg" },
+    { nombre: "Coca Cola", precio: 2.75, imagen: "/images/bebidas/coca_cola.jpg" },
+    { nombre: "Cabernet", precio: 4.0, imagen: "/images/bebidas/cabernet.jpg" },
+    { nombre: "Pinot Grigio", precio: 4.5, imagen: "/images/bebidas/pinot.jpg" },
+    { nombre: "Rose", precio: 4.5, imagen: "/images/bebidas/rose.jpg" },
+    { nombre: "Moet", precio: 5.0, imagen: "/images/bebidas/moet.jpg" }
+  ],
+  postres: [
+    { nombre: "Flan", precio: 4.0, imagen: "/images/postres/flan.jpg" },
+    { nombre: "Tiramisu", precio: 4.75, imagen: "/images/postres/tiramisu.jpg" }
+  ]
+}
+
+function Checkout({ credit = 1500, puntosIniciales = 0 }) {
+  const [orden, setOrden] = useState([])
+  const [fecha, setFecha] = useState("")
+  const [hora, setHora] = useState("")
+  const [mostrarReserva, setMostrarReserva] = useState(false)
+  const [puntos, setPuntos] = useState(puntosIniciales)
+  const [creditoRestante, setCreditoRestante] = useState(credit)
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const {
-        data: { user }
-      } = await supabase.auth.getUser()
-      setUser(user)
-
-      const { data } = await supabase
-        .from("credit")
-        .select("amount")
-        .eq("user_id", user.id)
-        .single()
-
-      if (data) setCredit(data.amount)
+    const verificarSesion = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        window.location.href = "/login"
+      }
     }
-
-    fetchUser()
+    verificarSesion()
   }, [])
 
-  useEffect(() => {
-    const calculatedFee = cartTotal * 0.2
-    const total = cartTotal + calculatedFee
-    setFee(calculatedFee)
-    setTotalWithFee(total)
+  const handleAgregar = (item) => {
+    setOrden([...orden, item])
+    setPuntos((prev) => prev + 10)
+    setCreditoRestante((prev) => prev - item.precio)
+  }
 
-    if (plan === "semanal") {
-      const cuota = (total - calculatedFee).toFixed(2) / 4
-      setInstallments([calculatedFee.toFixed(2), ...Array(4).fill(cuota.toFixed(2))])
-    } else {
-      const cuota = (total - calculatedFee).toFixed(2) / 6
-      setInstallments([calculatedFee.toFixed(2), ...Array(6).fill(cuota.toFixed(2))])
+  const handleReserva = async () => {
+    const { data: user } = await supabase.auth.getUser()
+    const { data, error } = await supabase.from("reservas").insert([
+      {
+        user_id: user?.user?.id,
+        fecha,
+        hora,
+        items: orden,
+        propina: 18,
+        total: orden.reduce((acc, item) => acc + item.precio, 0)
+      }
+    ])
+    if (!error) {
+      alert("✅ Reserva completada con éxito")
+      setOrden([])
     }
-  }, [cartTotal, plan])
+  }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 font-sans">
-      <h1 className="text-3xl font-bold mb-6">💳 Confirmación de Pago</h1>
-
-      <div className="bg-white shadow rounded-2xl p-6 mb-4">
-        <p className="text-gray-700 text-lg mb-2">
-          Crédito Disponible: <span className="text-green-600 font-bold">${credit}</span>
-        </p>
-        <p className="text-gray-700 text-lg mb-2">
-          Total de la orden: <span className="font-semibold">${cartTotal}</span>
-        </p>
-        <p className="text-gray-700 text-lg mb-2">
-          Cargo por servicio (20%):{" "}
-          <span className="font-semibold text-red-500">${fee.toFixed(2)}</span>
-        </p>
-        <p className="text-gray-800 text-xl font-bold">
-          Total a pagar: ${totalWithFee.toFixed(2)}
-        </p>
+    <div className="p-4 max-w-7xl mx-auto font-sans">
+      <div className="flex items-center gap-4 mb-6">
+        <img src="/images/logo1.jpg" alt="DineFlexx" className="h-12 w-12 object-contain rounded-full shadow" />
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">DineFlexx Restaurant</h1>
       </div>
 
-      <div className="bg-white shadow rounded-2xl p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-2">🧾 Elegir plan de pago:</h2>
-        <select
-          value={plan}
-          onChange={(e) => setPlan(e.target.value)}
-          className="border rounded-lg p-2 w-full"
+      <div className="bg-white p-6 rounded-2xl shadow-xl mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-lg md:text-xl font-semibold">
+            💰 Crédito Disponible: <span className="text-green-600">${creditoRestante.toFixed(2)}</span>
+          </p>
+          <p className="text-lg md:text-xl font-semibold">
+            🎁 Puntos Acumulados: <span className="text-blue-600">{puntos}</span>
+          </p>
+        </div>
+        <button
+          onClick={() => setMostrarReserva(!mostrarReserva)}
+          className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-5 py-2 md:py-3 rounded-xl mt-4 md:mt-0 font-semibold shadow-lg hover:scale-105 transition"
         >
-          <option value="semanal">4 Semanas</option>
-          <option value="mensual">6 Meses</option>
-        </select>
-
-        <h3 className="mt-4 font-semibold">Distribución de pagos:</h3>
-        <ul className="list-disc list-inside text-gray-600">
-          {installments.map((amt, i) => (
-            <li key={i}>
-              {i === 0 ? "Pago inicial (20%)" : `Cuota ${i}`} - ${amt}
-            </li>
-          ))}
-        </ul>
+          Reservar
+        </button>
       </div>
 
-      <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow">
-        Confirmar y pagar primer 20%
-      </button>
+      {mostrarReserva && (
+        <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
+          <h2 className="text-2xl font-semibold mb-4">📅 Reservar en Dine Restaurant</h2>
+          <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+            <input
+              type="date"
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
+              className="p-3 border rounded-xl shadow-sm"
+            />
+            <input
+              type="time"
+              value={hora}
+              onChange={(e) => setHora(e.target.value)}
+              className="p-3 border rounded-xl shadow-sm"
+            />
+          </div>
+          <button
+            onClick={handleReserva}
+            className="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition font-semibold"
+          >
+            Confirmar Reserva
+          </button>
+        </div>
+      )}
+
+      <div className="bg-yellow-100 border border-yellow-300 p-5 rounded-2xl shadow-xl mb-10">
+        <h2 className="text-xl md:text-2xl font-bold mb-1">👨‍🍳 Recomendación del Chef</h2>
+        <p className="text-gray-700">Risotto con parmesano y champiñones</p>
+        <p className="text-green-600 text-sm mb-3">🎯 Obtienes puntos adicionales con este plato</p>
+        <img
+          src="/images/comidas/risotto.jpg"
+          alt="Risotto"
+          className="w-full max-h-60 object-cover rounded-xl shadow mb-3"
+        />
+        <div className="flex justify-between items-center">
+          <p className="text-lg font-semibold">$12.75</p>
+          <button
+            onClick={() => handleAgregar({ nombre: "Risotto", precio: 12.75 })}
+            className="bg-blue-600 text-white px-5 py-2 rounded-xl shadow hover:scale-105 transition"
+          >
+            + Agregar
+          </button>
+        </div>
+      </div>
+
+      {Object.entries(menuData).map(([seccion, items]) => (
+        <div key={seccion} className="mb-14">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 capitalize text-gray-800">{seccion}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {items.map((item, idx) => (
+              <div
+                key={idx}
+                className="bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition flex flex-col justify-between"
+              >
+                <img
+                  src={item.imagen}
+                  alt={item.nombre}
+                  className="h-40 md:h-48 w-full object-contain rounded-xl mb-4"
+                />
+                <h3 className="text-lg md:text-xl font-semibold mb-1">{item.nombre}</h3>
+                <p className="text-blue-600 font-bold text-md md:text-lg mb-3">${item.precio.toFixed(2)}</p>
+                <button
+                  onClick={() => handleAgregar(item)}
+                  className="bg-blue-600 text-white w-full py-2 rounded-xl hover:bg-blue-700 font-medium"
+                >
+                  + Agregar
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
+
+export default Checkout
