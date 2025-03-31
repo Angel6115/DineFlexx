@@ -35,7 +35,9 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
 
   useEffect(() => {
     const verificarSesion = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user }
+      } = await supabase.auth.getUser()
       if (!user) {
         window.location.href = "/login"
       }
@@ -70,7 +72,7 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
   return (
     <div className="p-4 max-w-7xl mx-auto font-sans">
       <div className="flex items-center gap-4 mb-6">
-        <img src="/images/logo1.jpg" alt="DineFlexx" className="h-12 w-auto object-contain shadow" />
+        <img src="/images/logo1.jpg" alt="DineFlexx" className="h-12 w-12 object-contain shadow rounded" />
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">DineFlexx Restaurant</h1>
       </div>
 
@@ -80,7 +82,7 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
             💰 Crédito Disponible: <span className="text-green-600">${creditoRestante.toFixed(2)}</span>
           </p>
           <p className="text-lg md:text-xl font-semibold">
-            🎁 Puntos Acumulados: <span className="text-blue-600">{puntos}</span>
+            🏱 Puntos Acumulados: <span className="text-blue-600">{puntos}</span>
           </p>
         </div>
         <button
@@ -93,7 +95,7 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
 
       {mostrarReserva && (
         <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
-          <h2 className="text-2xl font-semibold mb-4">📅 Reservar en Dine Restaurant</h2>
+          <h2 className="text-2xl font-semibold mb-4">🗕️ Reservar en Dine Restaurant</h2>
           <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
             <input
               type="date"
@@ -120,11 +122,11 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
       <div className="bg-yellow-100 border border-yellow-300 p-5 rounded-2xl shadow-xl mb-10">
         <h2 className="text-xl md:text-2xl font-bold mb-1">👨‍🍳 Recomendación del Chef</h2>
         <p className="text-gray-700">Risotto con parmesano y champiñones</p>
-        <p className="text-green-600 text-sm mb-3">🎯 Obtienes puntos adicionales con este plato</p>
+        <p className="text-green-600 text-sm mb-3">🌟 Obtienes puntos adicionales con este plato</p>
         <img
           src="/images/comidas/risotto.jpg"
           alt="Risotto"
-          className="w-full max-h-60 object-cover rounded-xl shadow mb-3"
+          className="w-full max-h-60 md:max-h-80 object-cover rounded-xl shadow mb-3"
         />
         <div className="flex justify-between items-center">
           <p className="text-lg font-semibold">$12.75</p>
