@@ -6,8 +6,8 @@ import Perfil from "./Perfil"
 import Referidos from "./Referidos"
 import Soporte from "./SupportForm"
 import Menu from "./paginas/Menu"
+import Checkout from "./paginas/Checkout"
 import Navbar from "./components/Navbar"
-import Checkout from "./Checkout"
 
 function App() {
   return (
