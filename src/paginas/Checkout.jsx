@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../supabaseClient"
+import { useNavigate } from "react-router-dom"
 
 const menuData = {
   comidas: [
@@ -33,17 +34,19 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
   const [puntos, setPuntos] = useState(puntosIniciales)
   const [creditoRestante, setCreditoRestante] = useState(credit)
 
+  const navigate = useNavigate()
+
   useEffect(() => {
     const verificarSesion = async () => {
       const {
         data: { user }
       } = await supabase.auth.getUser()
       if (!user) {
-        window.location.href = "/login"
+        navigate("/login")
       }
     }
     verificarSesion()
-  }, [])
+  }, [navigate])
 
   const handleAgregar = (item) => {
     setOrden([...orden, item])
