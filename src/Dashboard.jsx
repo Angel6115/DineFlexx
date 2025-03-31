@@ -63,6 +63,12 @@ export default function Dashboard() {
         transition={{ duration: 0.5 }}
         className="max-w-4xl mx-auto text-center"
       >
+        <img
+          src="/images/logo1.jpg"
+          alt="DineFlexx logo"
+          className="mx-auto mb-4 w-32 h-auto object-contain"
+        />
+
         <h1 className="text-4xl font-bold mb-2">Bienvenido a DineFlexx</h1>
         <p className="text-gray-600 text-lg mb-6">
           Saborea hoy, paga a tu ritmo. Tecnología gastronómica avanzada para ti 🍽️
