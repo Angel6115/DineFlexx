@@ -20,6 +20,9 @@ export default function Navbar() {
           <Link to="/perfil" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
             👤 Perfil
           </Link>
+          <Link to="/reservas" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
+            📆 Reservas
+          </Link>
           <Link to="/soporte" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
             🛠️ Soporte
           </Link>
@@ -31,3 +34,4 @@ export default function Navbar() {
     </nav>
   )
 }
+

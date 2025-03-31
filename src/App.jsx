@@ -6,6 +6,7 @@ import Perfil from "./Perfil"
 import Soporte from "./paginas/Soporte"
 import Menu from "./paginas/Menu"
 import Referidos from "./paginas/Referidos"
+import HistorialReservas from "./paginas/HistorialReservas"
 import Navbar from "./components/Navbar"
 import LogoutButton from "./components/LogoutButton"
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="/soporte" element={<Soporte />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/referidos" element={<Referidos />} />
+          <Route path="/reservas" element={<HistorialReservas />} />
         </Routes>
         <LogoutButton />
       </div>
