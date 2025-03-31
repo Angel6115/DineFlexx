@@ -104,7 +104,7 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
 
       {mostrarReserva && (
         <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
-          <h2 className="text-2xl font-semibold mb-4">📅 Reservar en Dine Restaurant</h2>
+          <h2 className="text-2xl font-semibold mb-4">🗕️ Reservar en Dine Restaurant</h2>
           <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
             <input
               type="date"
@@ -123,7 +123,7 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
             onClick={handleReserva}
             className="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition font-semibold"
           >
-            Confirmar Reserva
+            💳 Confirmar y Pagar
           </button>
         </div>
       )}
