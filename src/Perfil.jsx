@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "./supabaseClient"
-import LogoutButton from "../components/LogoutButton"
+import LogoutButton from "./components/LogoutButton"
 
 export default function Perfil() {
   const [loading, setLoading] = useState(true)
