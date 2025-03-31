@@ -70,7 +70,7 @@ function Checkout({ credit = 1500, puntosIniciales = 0 }) {
   return (
     <div className="p-4 max-w-7xl mx-auto font-sans">
       <div className="flex items-center gap-4 mb-6">
-        <img src="/images/logo1.jpg" alt="DineFlexx" className="h-12 w-12 object-contain rounded-full shadow" />
+        <img src="/images/logo1.jpg" alt="DineFlexx" className="h-12 w-auto object-contain shadow" />
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">DineFlexx Restaurant</h1>
       </div>
 

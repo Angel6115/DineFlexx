@@ -3,11 +3,10 @@ import Dashboard from "./Dashboard"
 import Login from "./Login"
 import Register from "./Register"
 import Perfil from "./Perfil"
-import Menu from "./paginas/Menu"
 import Soporte from "./paginas/Soporte"
-import Referidos from "./Referidos"
-import Checkout from "./paginas/Checkout"
-import HistorialReservas from "./paginas/HistorialReservas"
+import Menu from "./paginas/Menu"
+import Checkout from "./Checkout"
+import Referidos from "./paginas/Referidos"
 import Navbar from "./components/Navbar"
 import LogoutButton from "./components/LogoutButton"
 
@@ -21,11 +20,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/perfil" element={<Perfil />} />
-          <Route path="/menu" element={<Menu />} />
           <Route path="/soporte" element={<Soporte />} />
-          <Route path="/referidos" element={<Referidos />} />
+          <Route path="/menu" element={<Menu />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/historial" element={<HistorialReservas />} />
+          <Route path="/referidos" element={<Referidos />} />
         </Routes>
         <LogoutButton />
       </div>

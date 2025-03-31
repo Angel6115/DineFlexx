@@ -1,36 +1,72 @@
-import { Link } from "react-router-dom"
-import logo from "/images/logo1.jpg"
+import { Link, useLocation } from "react-router-dom"
 
 export default function Navbar() {
+  const location = useLocation()
+
+  const isActive = (path) => location.pathname === path
+
   return (
-    <nav className="bg-black shadow-md">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <img src={logo} alt="Logo" className="h-10 w-10 rounded-full object-cover" />
-          <span className="text-white text-xl font-bold">DineFlexx</span>
+    <nav className="bg-black text-white px-4 py-3 shadow-md">
+      <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
+        {/* Logo + Título */}
+        <div className="flex items-center gap-3">
+          <img
+            src="/images/logo1.jpg"
+            alt="DineFlexx"
+            className="h-10 w-auto object-contain shadow rounded-xl"
+          />
+          <span className="text-xl font-bold tracking-tight">DineFlexx</span>
         </div>
 
-        <div className="flex space-x-6">
-          <Link to="/" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
-            🏠 Inicio
+        {/* Links */}
+        <div className="flex flex-wrap gap-2 justify-center md:justify-end text-sm sm:text-base">
+          <Link
+            to="/"
+            className={`px-4 py-2 rounded-xl transition ${
+              isActive("/") ? "bg-white text-black font-semibold" : "hover:bg-white hover:text-black"
+            }`}
+          >
+            Inicio
           </Link>
-          <Link to="/menu" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
-            🍽️ Menú
+          <Link
+            to="/menu"
+            className={`px-4 py-2 rounded-xl transition ${
+              isActive("/menu") ? "bg-white text-black font-semibold" : "hover:bg-white hover:text-black"
+            }`}
+          >
+            Menú
           </Link>
-          <Link to="/perfil" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
-            👤 Perfil
+          <Link
+            to="/perfil"
+            className={`px-4 py-2 rounded-xl transition ${
+              isActive("/perfil") ? "bg-white text-black font-semibold" : "hover:bg-white hover:text-black"
+            }`}
+          >
+            Perfil
           </Link>
-          <Link to="/reservas" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
-            📆 Reservas
+          <Link
+            to="/referidos"
+            className={`px-4 py-2 rounded-xl transition ${
+              isActive("/referidos") ? "bg-white text-black font-semibold" : "hover:bg-white hover:text-black"
+            }`}
+          >
+            Referidos
           </Link>
-          <Link to="/logros" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
-            🏅 Logros
+          <Link
+            to="/soporte"
+            className={`px-4 py-2 rounded-xl transition ${
+              isActive("/soporte") ? "bg-white text-black font-semibold" : "hover:bg-white hover:text-black"
+            }`}
+          >
+            Soporte
           </Link>
-          <Link to="/referidos" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
-            🎁 Referidos
-          </Link>
-          <Link to="/soporte" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
-            🛠️ Soporte
+          <Link
+            to="/checkout"
+            className={`px-4 py-2 rounded-xl transition ${
+              isActive("/checkout") ? "bg-white text-black font-semibold" : "hover:bg-white hover:text-black"
+            }`}
+          >
+            Checkout
           </Link>
         </div>
       </div>
