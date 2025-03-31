@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { supabase } from "./supabaseClient"
 import LogoutButton from "./components/LogoutButton"
+import ChatGastronomico from "./components/ChatGastronomico"
 
 export default function Perfil() {
   const [loading, setLoading] = useState(true)
@@ -10,14 +11,28 @@ export default function Perfil() {
   const [userId, setUserId] = useState(null)
 
   const CATEGORIES = [
-    "Vegano", "Tacos", "Alta cocina", "Asiática",
-    "Mediterránea", "Comida rápida", "Pastas", "Parrilla"
+    "Vegano",
+    "Tacos",
+    "Alta cocina",
+    "Asiática",
+    "Mediterránea",
+    "Comida rápida",
+    "Pastas",
+    "Parrilla"
   ]
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser()
-      if (error || !user) return setLoading(false)
+      const {
+        data: { user },
+        error
+      } = await supabase.auth.getUser()
+
+      if (error || !user) {
+        console.error("❌ No se pudo obtener el usuario:", error?.message)
+        setLoading(false)
+        return
+      }
 
       setUserId(user.id)
 
@@ -64,10 +79,12 @@ export default function Perfil() {
       .upsert({
         user_id: userId,
         preferences: selectedPrefs,
-        updated_at: new Date()
+        update_at: new Date()
       })
 
-    if (!error) {
+    if (error) {
+      console.error("❌ Error al guardar preferencias:", error.message)
+    } else {
       setPreferences(selectedPrefs)
       alert("Preferencias actualizadas ✅")
     }
@@ -75,7 +92,9 @@ export default function Perfil() {
 
   if (loading) {
     return (
-      <div className="p-6 text-center text-gray-600">Cargando perfil...</div>
+      <div className="p-6 text-center text-gray-600">
+        Cargando perfil...
+      </div>
     )
   }
 
@@ -87,12 +106,14 @@ export default function Perfil() {
       </div>
 
       <div className="bg-white shadow rounded-2xl p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-2">💳 Crédito Disponible</h2>
-        <p className="text-2xl text-green-600 font-bold">${credit ?? 0}</p>
+        <h2 className="text-xl font-semibold mb-2">Crédito Disponible</h2>
+        <p className="text-2xl text-green-600 font-bold">
+          ${credit ?? 0}
+        </p>
       </div>
 
       <div className="bg-white shadow rounded-2xl p-6">
-        <h2 className="text-xl font-semibold mb-4">🍽️ Preferencias Gastronómicas</h2>
+        <h2 className="text-xl font-semibold mb-4">Preferencias Gastronómicas</h2>
 
         <div className="flex flex-wrap gap-2 mb-4">
           {CATEGORIES.map((cat) => (
@@ -130,6 +151,9 @@ export default function Perfil() {
           </div>
         )}
       </div>
+
+      {/* GPT Integrado */}
+      <ChatGastronomico />
     </div>
   )
 }
