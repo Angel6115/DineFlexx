@@ -1,49 +1,93 @@
-import React from 'react';
-import { useCarrito } from '../context/CarritoContext';
+import { useEffect, useState } from "react"
+import { supabase } from "../supabaseClient"
 
 export default function Checkout() {
-  const { carrito, eliminarDelCarrito } = useCarrito();
+  const [user, setUser] = useState(null)
+  const [credit, setCredit] = useState(0)
+  const [cartTotal, setCartTotal] = useState(100) // Simulación del total de compra
+  const [fee, setFee] = useState(0)
+  const [totalWithFee, setTotalWithFee] = useState(0)
+  const [plan, setPlan] = useState("semanal")
+  const [installments, setInstallments] = useState([])
 
-  const total = carrito.reduce((acc, item) => acc + item.precio, 0);
+  useEffect(() => {
+    const fetchUser = async () => {
+      const {
+        data: { user }
+      } = await supabase.auth.getUser()
+      setUser(user)
+
+      const { data } = await supabase
+        .from("credit")
+        .select("amount")
+        .eq("user_id", user.id)
+        .single()
+
+      if (data) setCredit(data.amount)
+    }
+
+    fetchUser()
+  }, [])
+
+  useEffect(() => {
+    const calculatedFee = cartTotal * 0.2
+    const total = cartTotal + calculatedFee
+    setFee(calculatedFee)
+    setTotalWithFee(total)
+
+    if (plan === "semanal") {
+      const cuota = (total - calculatedFee).toFixed(2) / 4
+      setInstallments([calculatedFee.toFixed(2), ...Array(4).fill(cuota.toFixed(2))])
+    } else {
+      const cuota = (total - calculatedFee).toFixed(2) / 6
+      setInstallments([calculatedFee.toFixed(2), ...Array(6).fill(cuota.toFixed(2))])
+    }
+  }, [cartTotal, plan])
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-[#c08942] mb-6 text-center">Resumen del Pedido</h1>
+    <div className="max-w-3xl mx-auto p-6 font-sans">
+      <h1 className="text-3xl font-bold mb-6">💳 Confirmación de Pago</h1>
 
-      {carrito.length === 0 ? (
-        <p className="text-center text-gray-500">Tu carrito está vacío.</p>
-      ) : (
-        <div className="space-y-4">
-          {carrito.map((item, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between bg-white shadow p-4 rounded-xl border border-gray-200"
-            >
-              <div>
-                <h2 className="font-semibold text-gray-800">{item.nombre}</h2>
-                <p className="text-sm text-gray-500">${item.precio.toFixed(2)}</p>
-              </div>
-              <button
-                onClick={() => eliminarDelCarrito(index)}
-                className="text-sm text-red-500 hover:underline"
-              >
-                Eliminar
-              </button>
-            </div>
+      <div className="bg-white shadow rounded-2xl p-6 mb-4">
+        <p className="text-gray-700 text-lg mb-2">
+          Crédito Disponible: <span className="text-green-600 font-bold">${credit}</span>
+        </p>
+        <p className="text-gray-700 text-lg mb-2">
+          Total de la orden: <span className="font-semibold">${cartTotal}</span>
+        </p>
+        <p className="text-gray-700 text-lg mb-2">
+          Cargo por servicio (20%):{" "}
+          <span className="font-semibold text-red-500">${fee.toFixed(2)}</span>
+        </p>
+        <p className="text-gray-800 text-xl font-bold">
+          Total a pagar: ${totalWithFee.toFixed(2)}
+        </p>
+      </div>
+
+      <div className="bg-white shadow rounded-2xl p-6 mb-6">
+        <h2 className="text-lg font-semibold mb-2">🧾 Elegir plan de pago:</h2>
+        <select
+          value={plan}
+          onChange={(e) => setPlan(e.target.value)}
+          className="border rounded-lg p-2 w-full"
+        >
+          <option value="semanal">4 Semanas</option>
+          <option value="mensual">6 Meses</option>
+        </select>
+
+        <h3 className="mt-4 font-semibold">Distribución de pagos:</h3>
+        <ul className="list-disc list-inside text-gray-600">
+          {installments.map((amt, i) => (
+            <li key={i}>
+              {i === 0 ? "Pago inicial (20%)" : `Cuota ${i}`} - ${amt}
+            </li>
           ))}
+        </ul>
+      </div>
 
-          <div className="flex justify-between items-center pt-4 border-t mt-6">
-            <span className="font-bold text-xl text-gray-700">Total:</span>
-            <span className="text-xl text-amber-600 font-bold">${total.toFixed(2)}</span>
-          </div>
-
-          <div className="text-center mt-6">
-            <button className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-6 py-3 rounded-full transition">
-              Confirmar Pedido
-            </button>
-          </div>
-        </div>
-      )}
+      <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow">
+        Confirmar y pagar primer 20%
+      </button>
     </div>
-  );
+  )
 }

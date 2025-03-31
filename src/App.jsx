@@ -8,6 +8,7 @@ import Soporte from "./paginas/Soporte"
 import Referidos from "./Referidos"
 import Navbar from "./components/Navbar"
 import LogoutButton from "./components/LogoutButton"
+import Checkout from "./paginas/Checkout"
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
           <Route path="/menu" element={<Menu />} />
           <Route path="/soporte" element={<Soporte />} />
           <Route path="/referidos" element={<Referidos />} />
+          <Route path="/checkout" element={<Checkout />} />
+
         </Routes>
         <LogoutButton />
       </div>
