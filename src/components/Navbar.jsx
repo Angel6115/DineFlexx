@@ -23,15 +23,17 @@ export default function Navbar() {
           <Link to="/reservas" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
             📆 Reservas
           </Link>
-          <Link to="/soporte" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
-            🛠️ Soporte
+          <Link to="/logros" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
+            🏅 Logros
           </Link>
           <Link to="/referidos" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
             🎁 Referidos
+          </Link>
+          <Link to="/soporte" className="text-sm font-semibold text-white hover:text-yellow-300 transition">
+            🛠️ Soporte
           </Link>
         </div>
       </div>
     </nav>
   )
 }
-
