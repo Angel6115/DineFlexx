@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "./supabaseClient"
-import LogoutButton from "../components/LogoutButton"
+import LogoutButton from "./components/LogoutButton"
 
 export default function Perfil() {
   const [loading, setLoading] = useState(true)
@@ -8,55 +8,37 @@ export default function Perfil() {
   const [credit, setCredit] = useState(null)
   const [selectedPrefs, setSelectedPrefs] = useState([])
   const [userId, setUserId] = useState(null)
-  const [email, setEmail] = useState("")
-  const [createdAt, setCreatedAt] = useState("")
 
   const CATEGORIES = [
-    "Vegano",
-    "Tacos",
-    "Alta cocina",
-    "Asiática",
-    "Mediterránea",
-    "Comida rápida",
-    "Pastas",
-    "Parrilla"
+    "Vegano", "Tacos", "Alta cocina", "Asiática",
+    "Mediterránea", "Comida rápida", "Pastas", "Parrilla"
   ]
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const {
-        data: { user },
-        error
-      } = await supabase.auth.getUser()
-
-      if (error || !user) {
-        console.error("❌ No se pudo obtener el usuario:", error?.message)
-        setLoading(false)
-        return
-      }
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error || !user) return setLoading(false)
 
       setUserId(user.id)
-      setEmail(user.email)
-      setCreatedAt(user.created_at.split("T")[0])
 
-      const { data: prefs, error: prefsError } = await supabase
+      const { data: prefs } = await supabase
         .from("user_preferences")
         .select("preferences")
         .eq("user_id", user.id)
         .single()
 
-      if (!prefsError && prefs?.preferences) {
+      if (prefs?.preferences) {
         setPreferences(prefs.preferences)
         setSelectedPrefs(prefs.preferences)
       }
 
-      const { data: creditData, error: creditError } = await supabase
+      const { data: creditData } = await supabase
         .from("credit")
         .select("amount")
         .eq("user_id", user.id)
         .single()
 
-      if (!creditError && creditData?.amount !== undefined) {
+      if (creditData?.amount !== undefined) {
         setCredit(creditData.amount)
       }
 
@@ -82,12 +64,10 @@ export default function Perfil() {
       .upsert({
         user_id: userId,
         preferences: selectedPrefs,
-        update_at: new Date()
+        updated_at: new Date()
       })
 
-    if (error) {
-      console.error("❌ Error al guardar preferencias:", error.message)
-    } else {
+    if (!error) {
       setPreferences(selectedPrefs)
       alert("Preferencias actualizadas ✅")
     }
@@ -95,9 +75,7 @@ export default function Perfil() {
 
   if (loading) {
     return (
-      <div className="p-6 text-center text-gray-600">
-        Cargando perfil...
-      </div>
+      <div className="p-6 text-center text-gray-600">Cargando perfil...</div>
     )
   }
 
@@ -109,18 +87,12 @@ export default function Perfil() {
       </div>
 
       <div className="bg-white shadow rounded-2xl p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-2">Crédito Disponible</h2>
+        <h2 className="text-xl font-semibold mb-2">💳 Crédito Disponible</h2>
         <p className="text-2xl text-green-600 font-bold">${credit ?? 0}</p>
       </div>
 
-      <div className="bg-white shadow rounded-2xl p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-2">Datos del Usuario</h2>
-        <p><strong>Email:</strong> {email}</p>
-        <p><strong>Registrado desde:</strong> {createdAt}</p>
-      </div>
-
       <div className="bg-white shadow rounded-2xl p-6">
-        <h2 className="text-xl font-semibold mb-4">Preferencias Gastronómicas</h2>
+        <h2 className="text-xl font-semibold mb-4">🍽️ Preferencias Gastronómicas</h2>
 
         <div className="flex flex-wrap gap-2 mb-4">
           {CATEGORIES.map((cat) => (
