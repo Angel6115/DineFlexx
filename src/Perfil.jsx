@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "./supabaseClient"
 import LogoutButton from "./components/LogoutButton"
-import ChatGastronomico from "./components/ChatGastronomico"
 
 export default function Perfil() {
   const [loading, setLoading] = useState(true)
@@ -11,21 +10,14 @@ export default function Perfil() {
   const [userId, setUserId] = useState(null)
 
   const CATEGORIES = [
-    "Vegano",
-    "Tacos",
-    "Alta cocina",
-    "Asiática",
-    "Mediterránea",
-    "Comida rápida",
-    "Pastas",
-    "Parrilla"
+    "Vegano", "Tacos", "Alta cocina", "Asiática",
+    "Mediterránea", "Comida rápida", "Pastas", "Parrilla"
   ]
 
   useEffect(() => {
     const fetchProfile = async () => {
       const {
-        data: { user },
-        error
+        data: { user }, error
       } = await supabase.auth.getUser()
 
       if (error || !user) {
@@ -91,11 +83,7 @@ export default function Perfil() {
   }
 
   if (loading) {
-    return (
-      <div className="p-6 text-center text-gray-600">
-        Cargando perfil...
-      </div>
-    )
+    return <div className="p-6 text-center text-gray-600">Cargando perfil...</div>
   }
 
   return (
@@ -151,9 +139,6 @@ export default function Perfil() {
           </div>
         )}
       </div>
-
-      {/* GPT Integrado */}
-      <ChatGastronomico />
     </div>
   )
 }
