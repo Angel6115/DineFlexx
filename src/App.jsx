@@ -1,25 +1,32 @@
 // src/App.jsx
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import Navbar from "./components/Navbar"
-import Menu from "./paginas/Menu"
+import { useEffect, useState } from "react"
+import { Routes, Route, Navigate } from "react-router-dom"
+import { supabase } from "./supabaseClient"
 import Wallet from "./paginas/Wallet"
-import Perfil from "./Perfil"
-import Dashboard from "./Dashboard"
+import Perfil from "./paginas/Perfil"
+import Menu from "./paginas/Menu"
 import Login from "./Login"
-import ProtectedRoute from "./ProtectedRoute"
 
 export default function App() {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      setLoading(false)
+    })
+  }, [])
+
+  if (loading) return <div className="text-center mt-20 text-gray-600">Verificando acceso...</div>
+
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
-        <Route path="/menu" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
-        <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
-        <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/" element={user ? <Navigate to="/menu" /> : <Navigate to="/login" />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/menu" element={user ? <Menu /> : <Navigate to="/login" />} />
+      <Route path="/perfil" element={user ? <Perfil /> : <Navigate to="/login" />} />
+      <Route path="/wallet" element={user ? <Wallet /> : <Navigate to="/login" />} />
+    </Routes>
   )
 }
