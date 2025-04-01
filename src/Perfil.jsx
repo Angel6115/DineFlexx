@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { supabase } from "../supabaseClient"
+import { supabase } from "./supabaseClient"
 import { useOrder } from "../context/OrderContext"
 
 export default function Perfil() {
