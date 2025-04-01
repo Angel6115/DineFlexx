@@ -7,7 +7,7 @@ import Referidos from "./Referidos"
 import Soporte from "./SupportForm"
 import Menu from "./paginas/Menu"
 import Checkout from "./paginas/Checkout"
-import Wallet from "./Wallet"
+import Wallet from "./paginas/Wallet"
 import Navbar from "./components/Navbar"
 
 function App() {

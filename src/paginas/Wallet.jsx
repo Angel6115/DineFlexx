@@ -38,7 +38,11 @@ export default function Wallet() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 font-sans">
       <div className="flex items-center gap-4 mb-6">
-        <img src="/images/foto4.jpg" alt="Wallet" className="h-12 w-12 rounded-full object-cover shadow" />
+        <img
+          src="/images/foto4.jpg"
+          alt="Wallet"
+          className="h-12 w-12 rounded-full object-cover shadow"
+        />
         <h1 className="text-3xl font-bold tracking-tight text-gray-800">💼 Mi Wallet</h1>
       </div>
 
