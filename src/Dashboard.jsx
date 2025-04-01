@@ -1,6 +1,6 @@
 // src/paginas/Dashboard.jsx
 import { useEffect, useState } from "react"
-import { supabase } from "../supabaseClient"
+import { supabase } from "./supabaseClient"
 import { useOrder } from "../context/OrderContext"
 import DarkModeToggle from "../components/DarkModeToggle"
 import { motion } from "framer-motion"
