@@ -1,17 +1,9 @@
-import { useState } from "react"
+""import { useEffect, useState } from "react"
 import { supabase } from "../supabaseClient"
 import { useOrder } from "../context/OrderContext"
 
 export default function Wallet() {
-  const {
-    orden = [],
-    total = 0,
-    puntos = 0,
-    credit = 0,
-    cuotaInicial = 0,
-    pagosMensuales = 0
-  } = useOrder()
-
+  const { orden, total, puntos, credit, cuotaInicial, pagosMensuales } = useOrder()
   const [fecha, setFecha] = useState("")
   const [hora, setHora] = useState("")
   const [status, setStatus] = useState(null)
@@ -43,14 +35,8 @@ export default function Wallet() {
   return (
     <div className="p-4 max-w-4xl mx-auto font-sans">
       <div className="flex items-center gap-4 mb-6">
-        <img
-          src="/images/foto4.jpg"
-          alt="DineFlexx"
-          className="h-12 w-auto object-contain shadow"
-        />
-        <h1 className="text-3xl font-bold tracking-tight text-gray-800">
-          Wallet DineFlexx
-        </h1>
+        <img src="/images/foto4.jpg" alt="DineFlexx" className="h-12 w-12 object-contain shadow rounded" />
+        <h1 className="text-3xl font-bold tracking-tight">Wallet DineFlexx</h1>
       </div>
 
       <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
@@ -63,23 +49,15 @@ export default function Wallet() {
             {orden.map((item, i) => (
               <div key={i} className="flex justify-between items-center border-b pb-2">
                 <span>{item.nombre}</span>
-                <span className="font-semibold text-blue-600">${item.precio?.toFixed(2)}</span>
+                <span className="font-semibold text-blue-600">${item.precio.toFixed(2)}</span>
               </div>
             ))}
-            <div className="pt-4 border-t mt-2 space-y-1">
-              <p className="text-lg font-semibold text-gray-800">
-                Total: ${Number(total || 0).toFixed(2)}
-              </p>
-              <p className="text-green-700">
-                Crédito Disponible: ${Number(credit || 0).toFixed(2)}
-              </p>
+            <div className="pt-4 border-t mt-2">
+              <p className="text-lg font-semibold text-gray-800">Total: ${total.toFixed(2)}</p>
+              <p className="text-green-700">Crédito Disponible: ${credit.toFixed(2)}</p>
               <p className="text-purple-600">Puntos Acumulados: {puntos}</p>
-              <p className="text-yellow-600 mt-2">
-                💳 Pago inicial: ${Number(cuotaInicial || 0).toFixed(2)}
-              </p>
-              <p className="text-yellow-600">
-                📅 6 pagos mensuales: ${Number(pagosMensuales || 0).toFixed(2)}
-              </p>
+              <p className="text-yellow-600 mt-2">💳 Pago inicial: ${cuotaInicial.toFixed(2)}</p>
+              <p className="text-yellow-600">📅 6 pagos mensuales: ${Number(pagosMensuales || 0).toFixed(2)}</p>
             </div>
           </div>
         )}
@@ -87,7 +65,7 @@ export default function Wallet() {
 
       {orden.length > 0 && (
         <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
-          <h2 className="text-xl font-semibold mb-4">📅 Reservar</h2>
+          <h2 className="text-xl font-semibold mb-4">🗓️ Reservar</h2>
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             <input
               type="date"
