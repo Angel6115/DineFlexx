@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "./supabaseClient"
-import { useOrder } from "../context/OrderContext"
+import { useOrder } from "./context/OrderContext"
 
 export default function Perfil() {
   const [userId, setUserId] = useState(null)
