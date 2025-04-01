@@ -1,107 +1,124 @@
-import { useEffect, useState } from "react"
-import { supabase } from "../supabaseClient"
+import { useState } from "react"
 import { useOrder } from "../context/OrderContext"
 
+const tarjetas = [
+  { id: 1, tipo: "Débito", banco: "Banco Nacional", numero: "**** 1234" },
+  { id: 2, tipo: "Cuenta de Cheques", banco: "Interbank", numero: "**** 5678" }
+]
+
 export default function Wallet() {
-  const {
-    orden = [],
-    total = 0,
-    puntos = 0,
-    credit = 0,
-    cuotaInicial = 0,
-    pagosMensuales = 0
-  } = useOrder()
+  const { total, credit, puntos, referido, puntosReferido } = useOrder()
+  const [tipoPago, setTipoPago] = useState("mensual")
+  const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(null)
+  const [autorizado, setAutorizado] = useState(false)
+  const [walletGenerada, setWalletGenerada] = useState(false)
 
-  const [fecha, setFecha] = useState("")
-  const [hora, setHora] = useState("")
-  const [status, setStatus] = useState(null)
+  const fee = total * 0.2
+  const totalConFee = total + fee
+  const puntosGenerados = Math.floor(total / 2)
 
-  const handleReserva = async () => {
-    const {
-      data: { user }
-    } = await supabase.auth.getUser()
+  const cuotas = tipoPago === "mensual"
+    ? Array.from({ length: 6 }, (_, i) => totalConFee / 6)
+    : Array.from({ length: 8 }, (_, i) => totalConFee / 8)
 
-    const { error } = await supabase.from("reservas").insert([
-      {
-        user_id: user?.id,
-        fecha,
-        hora,
-        items: orden,
-        propina: 0,
-        total
-      }
-    ])
-
-    if (!error) {
-      setStatus("success")
-    } else {
-      console.error("Error al reservar:", error.message)
-      setStatus("error")
-    }
+  const generarWalletDigital = () => {
+    setWalletGenerada(true)
+    alert("Tarjeta generada exitosamente en Wallet Digital ✅")
   }
 
   return (
-    <div className="p-4 max-w-4xl mx-auto font-sans">
+    <div className="max-w-4xl mx-auto p-6 font-sans">
       <div className="flex items-center gap-4 mb-6">
-        <img
-          src="/images/foto4.jpg"
-          alt="DineFlexx"
-          className="h-12 w-auto object-contain shadow"
-        />
-        <h1 className="text-3xl font-bold tracking-tight text-gray-800">
-          Wallet DineFlexx
-        </h1>
+        <img src="/images/logo4.jpg" alt="DineFlexx" className="h-12 w-12 object-contain" />
+        <h1 className="text-3xl font-bold text-gray-800">Wallet DineFlexx</h1>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
-        <h2 className="text-2xl font-semibold mb-4">🧾 Resumen del Pedido</h2>
+      <div className="bg-white shadow p-6 rounded-2xl mb-6">
+        <h2 className="text-xl font-semibold mb-2">Resumen de Pago</h2>
+        <p>Total de la orden: <span className="font-medium">${total.toFixed(2)}</span></p>
+        <p>Fee DineFlexx (20%): <span className="font-medium">${fee.toFixed(2)}</span></p>
+        <p>Total a pagar: <span className="font-bold text-blue-600">${totalConFee.toFixed(2)}</span></p>
+        <p>Crédito disponible: <span className="text-green-600 font-semibold">${credit.toFixed(2)}</span></p>
+        <p>Puntos por esta compra: <span className="text-purple-600 font-semibold">+{puntosGenerados}</span></p>
+      </div>
 
-        {orden.length === 0 ? (
-          <p className="text-gray-500">No hay productos agregados.</p>
-        ) : (
-          <div className="space-y-4">
-            {orden.map((item, i) => (
-              <div key={i} className="flex justify-between items-center border-b pb-2">
-                <span>{item.nombre}</span>
-                <span className="font-semibold text-blue-600">${item.precio.toFixed(2)}</span>
-              </div>
-            ))}
-            <div className="pt-4 border-t mt-2 space-y-1">
-              <p className="text-lg font-semibold text-gray-800">Total: ${total.toFixed(2)}</p>
-              <p className="text-green-700">Crédito Disponible: ${credit.toFixed(2)}</p>
-              <p className="text-purple-600">Puntos Acumulados: {puntos}</p>
-              <p className="text-yellow-600 mt-2">💳 Pago inicial: ${cuotaInicial.toFixed(2)}</p>
-              <p className="text-yellow-600">📅 6 pagos mensuales: ${pagosMensuales.toFixed(2)}</p>
+      <div className="bg-white shadow p-6 rounded-2xl mb-6">
+        <h2 className="text-lg font-semibold mb-2">Selecciona tipo de pago</h2>
+        <div className="flex gap-4 mb-4">
+          <button
+            className={`px-4 py-2 rounded-full border ${tipoPago === "mensual" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"}`}
+            onClick={() => setTipoPago("mensual")}
+          >Mensual (6 cuotas)</button>
+          <button
+            className={`px-4 py-2 rounded-full border ${tipoPago === "semanal" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"}`}
+            onClick={() => setTipoPago("semanal")}
+          >Semanal (8 cuotas)</button>
+        </div>
+        <ul className="text-sm text-gray-700 list-disc list-inside">
+          {cuotas.map((c, i) => (
+            <li key={i}>Cuota {i + 1}: ${c.toFixed(2)}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="bg-white shadow p-6 rounded-2xl mb-6">
+        <h2 className="text-lg font-semibold mb-4">Selecciona tarjeta de pago</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {tarjetas.map(t => (
+            <div
+              key={t.id}
+              onClick={() => setTarjetaSeleccionada(t.id)}
+              className={`border rounded-xl p-4 cursor-pointer transition shadow-sm ${tarjetaSeleccionada === t.id ? "border-blue-600 bg-blue-50" : "hover:shadow-md"}`}
+            >
+              <p className="font-semibold">{t.tipo}</p>
+              <p>{t.banco}</p>
+              <p className="text-sm text-gray-500">{t.numero}</p>
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white shadow p-6 rounded-2xl mb-6">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={autorizado}
+            onChange={() => setAutorizado(!autorizado)}
+          />
+          <span className="text-sm">Autorizo a otra persona a usar mi crédito disponible</span>
+        </label>
+        {autorizado && (
+          <p className="mt-2 text-sm text-gray-600">Se reflejará el uso en tu historial de crédito.</p>
         )}
       </div>
 
-      {orden.length > 0 && (
-        <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
-          <h2 className="text-xl font-semibold mb-4">📅 Reservar</h2>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <input
-              type="date"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              className="p-3 border rounded-xl shadow-sm"
-            />
-            <input
-              type="time"
-              value={hora}
-              onChange={(e) => setHora(e.target.value)}
-              className="p-3 border rounded-xl shadow-sm"
-            />
-          </div>
-          <button
-            onClick={handleReserva}
-            className="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition font-semibold"
-          >
-            Confirmar Reserva y Pagar
-          </button>
-          {status === "success" && <p className="text-green-600 mt-2">✅ Reserva exitosa</p>}
-          {status === "error" && <p className="text-red-600 mt-2">❌ Error al reservar</p>}
+      {referido && (
+        <div className="bg-white shadow p-6 rounded-2xl mb-6">
+          <h2 className="text-lg font-semibold">Tu referido: <span className="text-blue-600">{referido}</span></h2>
+          <p className="text-sm text-gray-600">Puntos acumulados por esta persona: {puntosReferido}</p>
+        </div>
+      )}
+
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <button
+          onClick={() => alert("Orden procesada con éxito ✅")}
+          disabled={!tarjetaSeleccionada}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-2xl shadow disabled:opacity-50"
+        >
+          Pagar Orden
+        </button>
+
+        <button
+          onClick={generarWalletDigital}
+          className="bg-black hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded-2xl shadow"
+        >
+          Agregar a Wallet Digital (Apple Pay)
+        </button>
+      </div>
+
+      {walletGenerada && (
+        <div className="mt-6 bg-green-100 border border-green-300 text-green-800 p-4 rounded-xl shadow">
+          Tu tarjeta ha sido agregada exitosamente a tu Wallet Digital. 🎉
         </div>
       )}
     </div>
