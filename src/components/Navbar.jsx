@@ -5,7 +5,7 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path
 
   return (
-    <nav className="bg-[#14142B] text-white px-4 py-3 shadow-md">
+    <nav className="bg-[#14142B] text-white px-4 py-3 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
