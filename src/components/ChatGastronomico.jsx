@@ -1,9 +1,9 @@
-// src/components/AsistenteGastronomico.jsx
+// src/components/ChatGastronomico.jsx
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { BotIcon, SendHorizonal } from "lucide-react"
 
-export default function AsistenteGastronomico() {
+export default function ChatGastronomico() {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([
     { sender: "bot", text: "Hola 👋 ¿En qué puedo ayudarte con gastronomía o DineFlexx?" }
@@ -14,13 +14,18 @@ export default function AsistenteGastronomico() {
     if (!input.trim()) return
 
     setMessages([...messages, { sender: "user", text: input }])
-    // Simulación respuesta
+
+    // Simulación de respuesta AI
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: "🍽️ Esa es una excelente pregunta. Prueba buscar restaurantes cercanos usando tu ubicación. 😋" }
+        {
+          sender: "bot",
+          text: "🍽️ Esa es una excelente pregunta. Prueba buscar restaurantes cercanos usando tu ubicación. 😋"
+        }
       ])
     }, 800)
+
     setInput("")
   }
 
