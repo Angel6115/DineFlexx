@@ -1,48 +1,79 @@
+// src/components/AsistenteGastronomico.jsx
 import { useState } from "react"
+import { motion } from "framer-motion"
+import { BotIcon, SendHorizonal } from "lucide-react"
 
-export default function ChatGastronomico() {
-  const [query, setQuery] = useState("")
-  const [response, setResponse] = useState("")
-  const [loading, setLoading] = useState(false)
+export default function AsistenteGastronomico() {
+  const [open, setOpen] = useState(false)
+  const [messages, setMessages] = useState([
+    { sender: "bot", text: "Hola 👋 ¿En qué puedo ayudarte con gastronomía o DineFlexx?" }
+  ])
+  const [input, setInput] = useState("")
 
-  const handleAsk = async () => {
-    setLoading(true)
-    setResponse("")
+  const handleSend = () => {
+    if (!input.trim()) return
 
-    // Simulación de respuesta GPT (puede integrarse a API real)
+    setMessages([...messages, { sender: "user", text: input }])
+    // Simulación respuesta
     setTimeout(() => {
-      setResponse(
-        `🍲 Recomendación basada en tu búsqueda: "${query}"\nPrueba el restaurante "Sabor del Chef" que tiene excelente risotto de mariscos.`
-      )
-      setLoading(false)
-    }, 1500)
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "🍽️ Esa es una excelente pregunta. Prueba buscar restaurantes cercanos usando tu ubicación. 😋" }
+      ])
+    }, 800)
+    setInput("")
   }
 
   return (
-    <div className="mt-10 bg-white rounded-2xl p-6 shadow-md">
-      <h2 className="text-xl font-bold mb-3">🤖 Recomendador Gastronómico</h2>
-      <p className="text-sm text-gray-500 mb-4">Explora experiencias por tipo de comida o zona.</p>
-
-      <div className="flex gap-2">
-        <input
-          type="text"
-          className="flex-1 border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Ej: sushi en Condado, comida vegana, risotto..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+    <div className="fixed bottom-4 right-4 z-50">
+      {!open ? (
         <button
-          onClick={handleAsk}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold"
+          onClick={() => setOpen(true)}
+          className="bg-blue-600 text-white p-3 rounded-full shadow-xl hover:scale-105 transition"
         >
-          {loading ? "Buscando..." : "Buscar"}
+          <BotIcon className="w-5 h-5" />
         </button>
-      </div>
+      ) : (
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="bg-white dark:bg-gray-900 border dark:border-gray-700 shadow-2xl rounded-2xl w-80 sm:w-96 p-4 flex flex-col"
+        >
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-sm font-bold text-gray-800 dark:text-white">Asistente Gastronómico</h3>
+            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-red-500">✕</button>
+          </div>
 
-      {response && (
-        <div className="mt-4 p-4 bg-gray-50 border rounded-xl text-left text-sm text-gray-700 whitespace-pre-line">
-          {response}
-        </div>
+          <div className="flex-1 overflow-y-auto max-h-64 space-y-2 text-sm pr-1">
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`p-2 rounded-xl max-w-xs ${
+                  msg.sender === "bot"
+                    ? "bg-gray-200 dark:bg-gray-700 text-left"
+                    : "bg-blue-600 text-white ml-auto text-right"
+                }`}
+              >
+                {msg.text}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-3 flex items-center gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Hazme una pregunta..."
+              className="flex-1 text-sm px-3 py-2 border rounded-xl dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+            <button onClick={handleSend} className="text-blue-600 hover:text-blue-800">
+              <SendHorizonal className="w-5 h-5" />
+            </button>
+          </div>
+        </motion.div>
       )}
     </div>
   )

@@ -1,64 +1,72 @@
+// src/Login.jsx
 import { useState } from "react"
-import { supabase } from "./supabaseClient"
+import { supabase } from "../supabaseClient"
 import { useNavigate } from "react-router-dom"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [message, setMessage] = useState(null)
+  const [isLogin, setIsLogin] = useState(true)
+  const [error, setError] = useState(null)
   const navigate = useNavigate()
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-    if (error) {
-      setMessage(error.message)
-    } else {
-      setMessage("✅ ¡Bienvenido!")
-      setTimeout(() => {
-        navigate("/") // Redirige al dashboard o menú
-      }, 1000)
+    setError(null)
+    try {
+      const { error: authError } = isLogin
+        ? await supabase.auth.signInWithPassword({ email, password })
+        : await supabase.auth.signUp({ email, password })
+
+      if (authError) throw authError
+
+      navigate("/menu")
+    } catch (err) {
+      setError(err.message)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Iniciar Sesión</h2>
-
-        <input
-          type="email"
-          placeholder="Correo electrónico"
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 mb-4 border border-gray-300 rounded-xl shadow-sm"
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Contraseña"
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-3 mb-4 border border-gray-300 rounded-xl shadow-sm"
-          required
-        />
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition"
-        >
-          Iniciar Sesión
-        </button>
-
-        {message && (
-          <p className="text-center mt-4 text-sm text-blue-600">{message}</p>
-        )}
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
+        <h1 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">
+          {isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
+        </h1>
+        {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            required
+          />
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md font-semibold"
+          >
+            {isLogin ? "Ingresar" : "Registrarse"}
+          </button>
+        </form>
+        <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+          {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"} {" "}
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-blue-600 hover:underline dark:text-blue-400"
+          >
+            {isLogin ? "Crear una cuenta" : "Iniciar sesión"}
+          </button>
+        </p>
+      </div>
     </div>
   )
 }

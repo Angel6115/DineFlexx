@@ -1,10 +1,17 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class', // Soporte modo oscuro usando la clase "dark"
   content: [
     "./index.html",
-    "./src/**/*.{js,jsx}"
+    "./src/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        darkBg: "#1e1e1e",
+        darkText: "#e5e5e5"
+      }
+    }
   },
-  plugins: [require("@tailwindcss/aspect-ratio")],
+  plugins: []
 }

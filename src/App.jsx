@@ -1,35 +1,25 @@
+// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import Dashboard from "./Dashboard"
-import Login from "./Login"
-import Register from "./Register"
-import Perfil from "./Perfil"
-import Referidos from "./Referidos"
-import Soporte from "./SupportForm"
+import Navbar from "./components/Navbar"
 import Menu from "./paginas/Menu"
 import Wallet from "./paginas/Wallet"
-import Navbar from "./components/Navbar"
-import { OrderProvider } from "./context/OrderContext"
+import Perfil from "./Perfil"
+import Dashboard from "./Dashboard"
+import Login from "./Login"
+import ProtectedRoute from "./ProtectedRoute"
 
-function App() {
+export default function App() {
   return (
-    <OrderProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/perfil" element={<Perfil />} />
-            <Route path="/referidos" element={<Referidos />} />
-            <Route path="/soporte" element={<Soporte />} />
-            <Route path="/menu" element={<Menu />} />
-            <Route path="/wallet" element={<Wallet />} />
-          </Routes>
-        </div>
-      </Router>
-    </OrderProvider>
+    <Router>
+      <Navbar />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
+        <Route path="/menu" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
+        <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+        <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      </Routes>
+    </Router>
   )
 }
-
-export default App
