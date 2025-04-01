@@ -31,11 +31,13 @@ export default function Menu() {
 
   return (
     <div className="p-4 max-w-7xl mx-auto font-sans">
+      {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <img src="/images/foto4.jpg" alt="DineFlexx" className="h-12 w-12 object-contain shadow" />
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-800">DineFlexx Restaurant</h1>
       </div>
 
+      {/* Resumen de crédito */}
       <div className="bg-white p-6 rounded-2xl shadow-xl mb-8 flex flex-col md:flex-row md:items-center md:justify-between sticky top-0 z-10">
         <div>
           <p className="text-lg md:text-xl font-semibold">
@@ -47,26 +49,32 @@ export default function Menu() {
         </div>
       </div>
 
-      <div className="bg-yellow-100 border border-yellow-300 p-5 rounded-2xl shadow-xl mb-10 sticky top-24 z-10">
-        <h2 className="text-xl md:text-2xl font-bold mb-1">👨‍🍳 Recomendación del Chef</h2>
-        <p className="text-gray-700">Risotto con parmesano y champiñones</p>
-        <p className="text-green-600 text-sm mb-3">🎯 Obtienes puntos adicionales con este plato</p>
+      {/* Recomendación del Chef */}
+      <div className="relative w-full max-h-[420px] overflow-hidden rounded-2xl shadow-xl mb-10">
         <img
           src="/images/comidas/risotto.jpg"
-          alt="Risotto"
-          className="w-full max-h-60 object-cover rounded-xl shadow mb-3"
+          alt="Recomendación del Chef"
+          className="w-full h-full object-cover"
         />
-        <div className="flex justify-between items-center">
-          <p className="text-lg font-semibold">$12.75</p>
-          <button
-            onClick={() => agregarItem({ nombre: "Risotto", precio: 12.75 })}
-            className="bg-blue-600 text-white px-5 py-2 rounded-xl shadow hover:scale-105 transition"
-          >
-            + Agregar
-          </button>
+        <div className="absolute inset-0 bg-black bg-opacity-50 p-6 flex flex-col justify-between text-white">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">👨‍🍳 Recomendación del Chef</h2>
+            <p className="text-sm md:text-base mb-1">Risotto con parmesano y champiñones</p>
+            <p className="text-green-300 text-sm">🎯 Obtienes puntos adicionales con este plato</p>
+          </div>
+          <div className="flex justify-between items-center mt-4">
+            <p className="text-lg md:text-xl font-semibold">$12.75</p>
+            <button
+              onClick={() => agregarItem({ nombre: "Risotto", precio: 12.75 })}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl shadow transition"
+            >
+              + Agregar
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* Menú general */}
       {Object.entries(menuData).map(([seccion, items]) => (
         <div key={seccion} className="mb-14">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 capitalize text-gray-800">{seccion}</h2>
