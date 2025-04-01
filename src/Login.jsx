@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { supabase } from "./supabaseClient"
 import { useNavigate } from "react-router-dom"
+import { motion } from "framer-motion"
 
 export default function Login() {
   const [email, setEmail] = useState("")
@@ -27,8 +28,13 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-200 px-4 font-sans">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl"
+      >
         <h1 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">
           {isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
         </h1>
@@ -52,13 +58,13 @@ export default function Login() {
           />
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md font-semibold"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md font-semibold transition"
           >
             {isLogin ? "Ingresar" : "Registrarse"}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-          {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"} {" "}
+        <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+          {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
           <button
             onClick={() => setIsLogin(!isLogin)}
             className="text-blue-600 hover:underline dark:text-blue-400"
@@ -66,7 +72,7 @@ export default function Login() {
             {isLogin ? "Crear una cuenta" : "Iniciar sesión"}
           </button>
         </p>
-      </div>
+      </motion.div>
     </div>
   )
 }
