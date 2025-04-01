@@ -1,4 +1,4 @@
-// Wallet.jsx
+// src/paginas/Wallet.jsx
 import { useState, useEffect } from "react"
 import { useOrder } from "../context/OrderContext"
 import { supabase } from "../supabaseClient"
@@ -202,8 +202,8 @@ export default function Wallet() {
           <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
             {autorizaciones.map((a, i) => (
               <li key={i} className="py-3 flex justify-between">
-                <span>{a.created_at.slice(0, 10)} - Autorizado a: {a.nombre}</span>
-                <span className="text-blue-600 font-medium">${a.monto.toFixed(2)}</span>
+                <span>{a.created_at?.slice(0, 10)} - Autorizado a: {a.nombre}</span>
+                <span className="text-blue-600 font-medium">${typeof a.monto === "number" ? a.monto.toFixed(2) : "0.00"}</span>
               </li>
             ))}
           </ul>
