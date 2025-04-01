@@ -1,18 +1,26 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
 import { supabase } from "../supabaseClient"
 
 const menuData = {
   comidas: [
     { nombre: "Bruschetta", precio: 7.5, imagen: "/images/comidas/bruschetta.jpg" },
     { nombre: "Paella", precio: 14.99, imagen: "/images/comidas/paella.jpg" },
+    { nombre: "Pasta", precio: 11.5, imagen: "/images/comidas/pasta.jpg" },
+    { nombre: "Sopa de Tomate", precio: 6.25, imagen: "/images/comidas/sopa-tomate.jpg" },
+    { nombre: "Tacos", precio: 9.5, imagen: "/images/comidas/tacos.jpg" },
     { nombre: "Tomahawk", precio: 24.99, imagen: "/images/comidas/tomahawk.jpg" }
   ],
   bebidas: [
+    { nombre: "Limonada", precio: 3.5, imagen: "/images/bebidas/limonada.jpg" },
+    { nombre: "Mojito", precio: 5.5, imagen: "/images/bebidas/mojito.jpg" },
     { nombre: "Coca Cola", precio: 2.75, imagen: "/images/bebidas/coca_cola.jpg" },
+    { nombre: "Cabernet", precio: 4.0, imagen: "/images/bebidas/cabernet.jpg" },
+    { nombre: "Pinot Grigio", precio: 4.5, imagen: "/images/bebidas/pinot.jpg" },
+    { nombre: "Rose", precio: 4.5, imagen: "/images/bebidas/rose.jpg" },
     { nombre: "Moet", precio: 5.0, imagen: "/images/bebidas/moet.jpg" }
   ],
   postres: [
+    { nombre: "Flan", precio: 4.0, imagen: "/images/postres/flan.jpg" },
     { nombre: "Tiramisu", precio: 4.75, imagen: "/images/postres/tiramisu.jpg" }
   ]
 }
@@ -28,29 +36,61 @@ export default function Menu() {
     setCredito((prev) => prev - item.precio)
   }
 
-  const total = orden.reduce((acc, item) => acc + item.precio, 0)
-
   return (
-    <div className="flex flex-col md:flex-row max-w-7xl mx-auto gap-6 p-4">
-      {/* Menú principal */}
-      <div className="flex-1">
-        <div className="mb-6">
-          <img src="/images/logo3.png" className="h-16 mb-2" alt="Logo DineFlexx" />
-          <h1 className="text-3xl font-bold text-gray-800">Menú</h1>
+    <div className="relative font-sans">
+      {/* Header sticky */}
+      <div className="sticky top-0 z-50 bg-white shadow-md p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <img src="/images/logo4.png" alt="logo" className="h-10 w-auto object-contain" />
+          <h1 className="text-2xl font-bold tracking-tight text-gray-800">DineFlexx Restaurant</h1>
         </div>
+        <div className="text-right">
+          <p className="text-green-600 font-semibold">💰 Crédito: ${credito.toFixed(2)}</p>
+          <p className="text-blue-600 font-semibold">🎁 Puntos: {puntos}</p>
+        </div>
+      </div>
 
+      {/* Chef Recommendation */}
+      <div className="bg-yellow-100 p-5 shadow-inner flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold mb-1">👨‍🍳 Recomendación del Chef</h2>
+          <p className="text-gray-700">Risotto con parmesano y champiñones</p>
+          <p className="text-green-600 text-sm mb-2">🎯 Puntos adicionales con este plato</p>
+          <button
+            onClick={() => handleAgregar({ nombre: "Risotto", precio: 12.75 })}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl mt-2 shadow"
+          >
+            + Agregar Risotto ($12.75)
+          </button>
+        </div>
+        <img
+          src="/images/comidas/risotto.jpg"
+          alt="Risotto"
+          className="w-48 h-32 object-cover rounded-xl shadow"
+        />
+      </div>
+
+      {/* Secciones del menú */}
+      <div className="p-6 max-w-7xl mx-auto">
         {Object.entries(menuData).map(([categoria, items]) => (
           <div key={categoria} className="mb-10">
-            <h2 className="text-xl font-semibold capitalize mb-4">{categoria}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {items.map((item, i) => (
-                <div key={i} className="bg-white rounded-2xl shadow p-4">
-                  <img src={item.imagen} alt={item.nombre} className="w-full h-40 object-cover rounded-xl mb-2" />
-                  <h3 className="text-md font-semibold">{item.nombre}</h3>
-                  <p className="text-blue-600 font-bold">${item.precio.toFixed(2)}</p>
+            <h2 className="text-2xl font-bold capitalize mb-4 text-gray-700">{categoria}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+              {items.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-2xl p-4 shadow hover:shadow-lg transition flex flex-col"
+                >
+                  <img
+                    src={item.imagen}
+                    alt={item.nombre}
+                    className="h-40 object-contain mb-3 rounded-xl"
+                  />
+                  <h3 className="text-lg font-semibold text-gray-800">{item.nombre}</h3>
+                  <p className="text-blue-600 font-bold text-sm mb-3">${item.precio.toFixed(2)}</p>
                   <button
                     onClick={() => handleAgregar(item)}
-                    className="mt-2 bg-blue-600 text-white px-4 py-1 rounded-xl hover:bg-blue-700"
+                    className="bg-blue-600 text-white py-2 rounded-xl mt-auto hover:bg-blue-700"
                   >
                     + Agregar
                   </button>
@@ -59,24 +99,6 @@ export default function Menu() {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Sidebar Sticky */}
-      <div className="md:w-80 sticky top-4 self-start bg-white shadow-lg rounded-2xl p-6 h-fit">
-        <h2 className="text-xl font-semibold mb-4">🧾 Resumen del Pedido</h2>
-        <p className="mb-2 text-green-700 font-medium">Crédito restante: ${credito.toFixed(2)}</p>
-        <ul className="text-sm mb-4 space-y-1">
-          {orden.map((item, i) => (
-            <li key={i} className="flex justify-between text-gray-700">
-              <span>{item.nombre}</span>
-              <span>${item.precio.toFixed(2)}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="font-bold text-gray-800 mb-2">Total: ${total.toFixed(2)}</p>
-        <Link to="/checkout" className="block text-center bg-black text-white py-2 rounded-xl hover:bg-gray-800">
-          Ir a Checkout
-        </Link>
       </div>
     </div>
   )

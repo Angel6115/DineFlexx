@@ -6,6 +6,9 @@ export default function Wallet() {
   const [userId, setUserId] = useState(null)
   const [credit, setCredit] = useState(0)
   const [payments, setPayments] = useState([])
+  const [cuotas, setCuotas] = useState(3)
+  const [propina, setPropina] = useState(0.2)
+  const [totalGastado, setTotalGastado] = useState(0)
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -30,25 +33,65 @@ export default function Wallet() {
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
         setPayments(paymentHistory || [])
+
+        const total = paymentHistory?.reduce((sum, p) => sum + p.amount, 0) || 0
+        setTotalGastado(total)
       }
     }
     fetchUserData()
   }, [])
 
+  const cuotaInicial = totalGastado * propina
+  const restante = totalGastado - cuotaInicial
+  const pagoPorCuota = (restante / cuotas).toFixed(2)
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 font-sans">
       <div className="flex items-center gap-4 mb-6">
-        <img
-          src="/images/foto4.jpg"
-          alt="Wallet"
-          className="h-12 w-12 rounded-full object-cover shadow"
-        />
-        <h1 className="text-3xl font-bold tracking-tight text-gray-800">💼 Mi Wallet</h1>
+        <img src="/images/logo4.png" alt="Wallet" className="h-12 w-auto object-contain shadow" />
+        <h1 className="text-3xl font-bold tracking-tight text-gray-800">DineFlexx Wallet</h1>
       </div>
 
-      <div className="bg-white shadow rounded-2xl p-6 mb-8">
+      <div className="bg-white shadow rounded-2xl p-6 mb-6">
         <h2 className="text-xl font-semibold mb-2">💳 Crédito Disponible</h2>
-        <p className="text-2xl text-green-600 font-bold">${credit}</p>
+        <p className="text-2xl text-green-600 font-bold mb-2">${credit}</p>
+        <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-4 rounded-xl shadow hover:scale-105 transition">
+          Añadir a Apple Wallet
+        </button>
+      </div>
+
+      <div className="bg-white shadow rounded-2xl p-6 mb-6">
+        <h2 className="text-xl font-semibold mb-4">🧮 Calculadora de Pagos</h2>
+        <div className="mb-2 text-gray-700">Total gastado: <strong>${totalGastado.toFixed(2)}</strong></div>
+
+        <label className="block mb-2 text-sm font-medium">Selecciona método de pago:</label>
+        <select
+          value={cuotas}
+          onChange={(e) => setCuotas(parseInt(e.target.value))}
+          className="mb-4 p-2 border rounded-lg shadow-sm"
+        >
+          <option value={1}>1 cuota mensual</option>
+          <option value={2}>2 cuotas mensuales</option>
+          <option value={3}>3 cuotas mensuales</option>
+          <option value={4}>4 cuotas mensuales</option>
+          <option value={4}>4 pagos semanales</option>
+        </select>
+
+        <label className="block mb-2 text-sm font-medium">Selecciona propina:</label>
+        <select
+          value={propina}
+          onChange={(e) => setPropina(parseFloat(e.target.value))}
+          className="mb-4 p-2 border rounded-lg shadow-sm"
+        >
+          <option value={0.2}>20%</option>
+          <option value={0.25}>25%</option>
+          <option value={0.3}>30%</option>
+        </select>
+
+        <div className="text-gray-800 space-y-1">
+          <p>💰 Cuota inicial: <strong>${cuotaInicial.toFixed(2)}</strong></p>
+          <p>📆 Pagos mensuales: <strong>{cuotas} x ${pagoPorCuota}</strong></p>
+        </div>
       </div>
 
       <div className="bg-white shadow rounded-2xl p-6">
