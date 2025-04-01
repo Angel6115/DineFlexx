@@ -49,14 +49,14 @@ export default function Wallet() {
             {orden.map((item, i) => (
               <div key={i} className="flex justify-between items-center border-b pb-2">
                 <span>{item.nombre}</span>
-                <span className="font-semibold text-blue-600">${item.precio.toFixed(2)}</span>
+                <span className="font-semibold text-blue-600">${Number(item.precio || 0).toFixed(2)}</span>
               </div>
             ))}
             <div className="pt-4 border-t mt-2">
-              <p className="text-lg font-semibold text-gray-800">Total: ${total.toFixed(2)}</p>
-              <p className="text-green-700">Crédito Disponible: ${credit.toFixed(2)}</p>
+              <p className="text-lg font-semibold text-gray-800">Total: ${Number(total || 0).toFixed(2)}</p>
+              <p className="text-green-700">Crédito Disponible: ${Number(credit || 0).toFixed(2)}</p>
               <p className="text-purple-600">Puntos Acumulados: {puntos}</p>
-              <p className="text-yellow-600 mt-2">💳 Pago inicial: ${cuotaInicial.toFixed(2)}</p>
+              <p className="text-yellow-600 mt-2">💳 Pago inicial: ${Number(cuotaInicial || 0).toFixed(2)}</p>
               <p className="text-yellow-600">📅 6 pagos mensuales: ${Number(pagosMensuales || 0).toFixed(2)}</p>
             </div>
           </div>
