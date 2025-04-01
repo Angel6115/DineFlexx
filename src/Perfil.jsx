@@ -1,6 +1,6 @@
 // src/Perfil.jsx
 import { useEffect, useState } from "react"
-import { supabase } from "../supabaseClient"
+import { supabase } from "./supabaseClient"
 import { useOrder } from "../context/OrderContext"
 import { motion } from "framer-motion"
 import AsistenteGastronomico from "./components/AsistenteGastronomico"
