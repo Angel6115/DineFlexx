@@ -5,14 +5,15 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path
 
   return (
-    <nav className="bg-gradient-to-r from-purple-900 to-indigo-900 text-white px-4 py-3 shadow-md">
+    <nav className="bg-gradient-to-r from-[#090979] via-[#4b6cb7] to-[#2a2a72] text-white px-4 py-3 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
+        
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
           <img
-            src="/images/logo4.png"
-            alt="DineFlexx"
-            className="h-10 w-auto object-contain"
+            src="/images/foto4.jpg"
+            alt="DineFlexx Logo"
+            className="h-10 w-auto object-contain rounded"
           />
         </Link>
 
@@ -23,6 +24,7 @@ export default function Navbar() {
           <NavLink path="/perfil" label="Perfil" isActive={isActive} />
           <NavLink path="/referidos" label="Referidos" isActive={isActive} />
           <NavLink path="/soporte" label="Soporte" isActive={isActive} />
+          <NavLink path="/wallet" label="Wallet" isActive={isActive} />
           <NavLink path="/checkout" label="Checkout" isActive={isActive} />
         </div>
       </div>
