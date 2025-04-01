@@ -2,38 +2,26 @@ import { useEffect, useState } from "react"
 import { supabase } from "./supabaseClient"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
+import { useOrder } from "./context/OrderContext"
 
 export default function Dashboard() {
-  const [user, setUser] = useState(null)
-  const [credit, setCredit] = useState(0)
-  const [points, setPoints] = useState(0)
+  const [nombre, setNombre] = useState("")
+  const { credit, puntos } = useOrder()
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserName = async () => {
       const {
         data: { user },
         error
       } = await supabase.auth.getUser()
+
       if (!error && user) {
-        setUser(user)
-
-        const { data: creditData } = await supabase
-          .from("credit")
-          .select("amount")
-          .eq("user_id", user.id)
-          .single()
-        if (creditData) setCredit(creditData.amount)
-
-        const { data: pointsData } = await supabase
-          .from("points")
-          .select("total")
-          .eq("user_id", user.id)
-          .single()
-        if (pointsData) setPoints(pointsData.total)
+        const fullName = user.user_metadata?.full_name || "Usuario"
+        setNombre(fullName)
       }
     }
 
-    fetchUser()
+    fetchUserName()
   }, [])
 
   return (
@@ -44,12 +32,11 @@ export default function Dashboard() {
         transition={{ duration: 0.5 }}
         className="max-w-4xl mx-auto text-center"
       >
-        <img
-          src="/images/logo3.png"
-          alt="DineFlexx Logo"
-          className="w-32 mx-auto mb-4"
-        />
-        <h1 className="text-4xl font-bold mb-2">Bienvenido a DineFlexx</h1>
+        <div className="flex justify-center mb-4">
+          <img src="/images/logo3.png" alt="DineFlexx" className="h-20 object-contain" />
+        </div>
+
+        <h1 className="text-4xl font-bold mb-2">Bienvenido, {nombre}</h1>
         <p className="text-gray-600 text-lg mb-6">
           Saborea hoy, paga a tu ritmo. Tecnología gastronómica avanzada para ti 🍽️
         </p>
@@ -57,12 +44,12 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <div className="bg-white rounded-2xl shadow p-6 text-left">
             <h2 className="text-lg font-semibold text-gray-700 mb-2">💳 Crédito Disponible</h2>
-            <p className="text-2xl font-bold text-green-600">${credit}</p>
+            <p className="text-2xl font-bold text-green-600">${credit.toFixed(2)}</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow p-6 text-left">
             <h2 className="text-lg font-semibold text-gray-700 mb-2">⭐ Puntos Acumulados</h2>
-            <p className="text-2xl font-bold text-blue-600">{points}</p>
+            <p className="text-2xl font-bold text-blue-600">{puntos}</p>
           </div>
         </div>
 
@@ -80,10 +67,10 @@ export default function Dashboard() {
             👤 Perfil
           </Link>
           <Link
-            to="/soporte"
+            to="/wallet"
             className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 rounded-xl shadow text-lg"
           >
-            🛠️ Soporte
+            💳 Wallet
           </Link>
         </div>
       </motion.div>

@@ -6,28 +6,29 @@ import Perfil from "./Perfil"
 import Referidos from "./Referidos"
 import Soporte from "./SupportForm"
 import Menu from "./paginas/Menu"
-import Checkout from "./paginas/Checkout"
 import Wallet from "./paginas/Wallet"
 import Navbar from "./components/Navbar"
+import { OrderProvider } from "./context/OrderContext"
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/perfil" element={<Perfil />} />
-          <Route path="/referidos" element={<Referidos />} />
-          <Route path="/soporte" element={<Soporte />} />
-          <Route path="/menu" element={<Menu />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/wallet" element={<Wallet />} />
-        </Routes>
-      </div>
-    </Router>
+    <OrderProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/perfil" element={<Perfil />} />
+            <Route path="/referidos" element={<Referidos />} />
+            <Route path="/soporte" element={<Soporte />} />
+            <Route path="/menu" element={<Menu />} />
+            <Route path="/wallet" element={<Wallet />} />
+          </Routes>
+        </div>
+      </Router>
+    </OrderProvider>
   )
 }
 
