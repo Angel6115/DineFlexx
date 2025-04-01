@@ -69,8 +69,14 @@ export default function Perfil() {
     <div className="max-w-4xl mx-auto px-4 py-6 font-sans">
       <div className="bg-white shadow rounded-2xl p-6 mb-6">
         <h2 className="text-xl font-semibold mb-2">Crédito Disponible</h2>
-        <p className="text-2xl text-green-600 font-bold">${credit.toFixed(2)}</p>
-        <p className="text-sm text-gray-500 mt-1">Puntos acumulados: {puntos}</p>
+        <p className="text-2xl text-green-600 font-bold">
+          {typeof credit === "number"
+            ? `$${credit.toFixed(2)}`
+            : "Cargando..."}
+        </p>
+        <p className="text-sm text-gray-500 mt-1">
+          Puntos acumulados: {typeof puntos === "number" ? puntos : "Cargando..."}
+        </p>
       </div>
 
       <div className="bg-white shadow rounded-2xl p-6 mb-6">
@@ -103,9 +109,16 @@ export default function Perfil() {
           <h2 className="text-xl font-semibold mb-4">📅 Historial de Reservas</h2>
           <ul className="divide-y divide-gray-200">
             {citas.map((res, i) => (
-              <li key={i} className="py-3 flex justify-between text-sm text-gray-700">
-                <span>{res.fecha} a las {res.hora}</span>
-                <span className="font-bold text-blue-600">${res.total.toFixed(2)}</span>
+              <li
+                key={i}
+                className="py-3 flex justify-between text-sm text-gray-700"
+              >
+                <span>
+                  {res.fecha} a las {res.hora}
+                </span>
+                <span className="font-bold text-blue-600">
+                  ${res.total?.toFixed(2)}
+                </span>
               </li>
             ))}
           </ul>
