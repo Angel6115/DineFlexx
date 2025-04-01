@@ -6,12 +6,19 @@ const tarjetas = [
   { id: 2, tipo: "Cuenta de Cheques", banco: "Interbank", numero: "**** 5678" }
 ]
 
+const historialTransacciones = [
+  { id: 1, fecha: "2025-03-28", tipo: "Pago semanal", monto: 18.75 },
+  { id: 2, fecha: "2025-03-22", tipo: "Wallet Digital", monto: 102.50 },
+  { id: 3, fecha: "2025-03-15", tipo: "Autorizado a otro", monto: 45.00 },
+]
+
 export default function Wallet() {
   const { total = 0, credit = 0, puntos = 0, referido = null, puntosReferido = 0 } = useOrder()
   const [tipoPago, setTipoPago] = useState("mensual")
   const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(null)
   const [autorizado, setAutorizado] = useState(false)
   const [walletGenerada, setWalletGenerada] = useState(false)
+  const [ordenExitosa, setOrdenExitosa] = useState(false)
 
   const fee = typeof total === "number" ? total * 0.2 : 0
   const totalConFee = typeof total === "number" ? total + fee : 0
@@ -23,7 +30,11 @@ export default function Wallet() {
 
   const generarWalletDigital = () => {
     setWalletGenerada(true)
-    alert("Tarjeta generada exitosamente en Wallet Digital ✅")
+    setOrdenExitosa(true)
+  }
+
+  const pagarOrden = () => {
+    setOrdenExitosa(true)
   }
 
   return (
@@ -33,94 +44,110 @@ export default function Wallet() {
         <h1 className="text-3xl font-bold text-gray-800">Wallet DineFlexx</h1>
       </div>
 
-      <div className="bg-white shadow p-6 rounded-2xl mb-6">
-        <h2 className="text-xl font-semibold mb-2">Resumen de Pago</h2>
-        <p>Total de la orden: <span className="font-medium">${typeof total === "number" ? total.toFixed(2) : "Cargando..."}</span></p>
-        <p>Fee DineFlexx (20%): <span className="font-medium">${typeof fee === "number" ? fee.toFixed(2) : "Cargando..."}</span></p>
-        <p>Total a pagar: <span className="font-bold text-blue-600">${typeof totalConFee === "number" ? totalConFee.toFixed(2) : "Cargando..."}</span></p>
-        <p>Crédito disponible: <span className="text-green-600 font-semibold">${typeof credit === "number" ? credit.toFixed(2) : "Cargando..."}</span></p>
-        <p>Puntos por esta compra: <span className="text-purple-600 font-semibold">+{puntosGenerados}</span></p>
-      </div>
-
-      <div className="bg-white shadow p-6 rounded-2xl mb-6">
-        <h2 className="text-lg font-semibold mb-2">Selecciona tipo de pago</h2>
-        <div className="flex gap-4 mb-4">
-          <button
-            className={`px-4 py-2 rounded-full border ${tipoPago === "mensual" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"}`}
-            onClick={() => setTipoPago("mensual")}
-          >Mensual (6 cuotas)</button>
-          <button
-            className={`px-4 py-2 rounded-full border ${tipoPago === "semanal" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"}`}
-            onClick={() => setTipoPago("semanal")}
-          >Semanal (8 cuotas)</button>
+      {!ordenExitosa && <>
+        <div className="bg-white shadow p-6 rounded-2xl mb-6">
+          <h2 className="text-xl font-semibold mb-2">Resumen de Pago</h2>
+          <p>Total de la orden: <span className="font-medium">${typeof total === "number" ? total.toFixed(2) : "Cargando..."}</span></p>
+          <p>Fee DineFlexx (20%): <span className="font-medium">${typeof fee === "number" ? fee.toFixed(2) : "Cargando..."}</span></p>
+          <p>Total a pagar: <span className="font-bold text-blue-600">${typeof totalConFee === "number" ? totalConFee.toFixed(2) : "Cargando..."}</span></p>
+          <p>Crédito disponible: <span className="text-green-600 font-semibold">${typeof credit === "number" ? credit.toFixed(2) : "Cargando..."}</span></p>
+          <p>Puntos por esta compra: <span className="text-purple-600 font-semibold">+{puntosGenerados}</span></p>
         </div>
-        <ul className="text-sm text-gray-700 list-disc list-inside">
-          {cuotas.map((c, i) => (
-            <li key={i}>Cuota {i + 1}: ${typeof c === "number" ? c.toFixed(2) : "-"}</li>
+
+        <div className="bg-white shadow p-6 rounded-2xl mb-6">
+          <h2 className="text-lg font-semibold mb-2">Selecciona tipo de pago</h2>
+          <div className="flex gap-4 mb-4">
+            <button
+              className={`px-4 py-2 rounded-full border ${tipoPago === "mensual" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"}`}
+              onClick={() => setTipoPago("mensual")}
+            >Mensual (6 cuotas)</button>
+            <button
+              className={`px-4 py-2 rounded-full border ${tipoPago === "semanal" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"}`}
+              onClick={() => setTipoPago("semanal")}
+            >Semanal (8 cuotas)</button>
+          </div>
+          <ul className="text-sm text-gray-700 list-disc list-inside">
+            {cuotas.map((c, i) => (
+              <li key={i}>Cuota {i + 1}: ${typeof c === "number" ? c.toFixed(2) : "-"}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="bg-white shadow p-6 rounded-2xl mb-6">
+          <h2 className="text-lg font-semibold mb-4">Selecciona tarjeta de pago</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {tarjetas.map(t => (
+              <div
+                key={t.id}
+                onClick={() => setTarjetaSeleccionada(t.id)}
+                className={`border rounded-xl p-4 cursor-pointer transition shadow-sm ${tarjetaSeleccionada === t.id ? "border-blue-600 bg-blue-50" : "hover:shadow-md"}`}
+              >
+                <p className="font-semibold">{t.tipo}</p>
+                <p>{t.banco}</p>
+                <p className="text-sm text-gray-500">{t.numero}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white shadow p-6 rounded-2xl mb-6">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={autorizado}
+              onChange={() => setAutorizado(!autorizado)}
+            />
+            <span className="text-sm">Autorizo a otra persona a usar mi crédito disponible</span>
+          </label>
+          {autorizado && (
+            <p className="mt-2 text-sm text-gray-600">Se reflejará el uso en tu historial de crédito.</p>
+          )}
+        </div>
+
+        {referido && (
+          <div className="bg-white shadow p-6 rounded-2xl mb-6">
+            <h2 className="text-lg font-semibold">Tu referido: <span className="text-blue-600">{referido}</span></h2>
+            <p className="text-sm text-gray-600">Puntos acumulados por esta persona: {puntosReferido}</p>
+          </div>
+        )}
+
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <button
+            onClick={pagarOrden}
+            disabled={!tarjetaSeleccionada}
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-2xl shadow disabled:opacity-50"
+          >
+            Pagar Orden
+          </button>
+
+          <button
+            onClick={generarWalletDigital}
+            className="bg-black hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded-2xl shadow"
+          >
+            Agregar a Wallet Digital (Apple Pay)
+          </button>
+        </div>
+      </>}
+
+      {ordenExitosa && (
+        <div className="mt-6 bg-green-100 border border-green-300 text-green-800 p-6 rounded-xl shadow space-y-4">
+          <h2 className="text-xl font-semibold">✅ Orden procesada con éxito</h2>
+          <p>Gracias por tu compra. Los pagos se realizarán según tu plan seleccionado.</p>
+          {walletGenerada && <p>Tu tarjeta fue agregada a Wallet Digital exitosamente.</p>}
+        </div>
+      )}
+
+      <div className="mt-10 bg-white shadow p-6 rounded-2xl">
+        <h2 className="text-lg font-semibold mb-4">📜 Historial de Transacciones</h2>
+        <ul className="divide-y divide-gray-200 text-sm">
+          {historialTransacciones.map((h) => (
+            <li key={h.id} className="py-3 flex justify-between">
+              <span>{h.fecha} - {h.tipo}</span>
+              <span className="text-blue-600 font-medium">${h.monto.toFixed(2)}</span>
+            </li>
           ))}
         </ul>
       </div>
-
-      <div className="bg-white shadow p-6 rounded-2xl mb-6">
-        <h2 className="text-lg font-semibold mb-4">Selecciona tarjeta de pago</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {tarjetas.map(t => (
-            <div
-              key={t.id}
-              onClick={() => setTarjetaSeleccionada(t.id)}
-              className={`border rounded-xl p-4 cursor-pointer transition shadow-sm ${tarjetaSeleccionada === t.id ? "border-blue-600 bg-blue-50" : "hover:shadow-md"}`}
-            >
-              <p className="font-semibold">{t.tipo}</p>
-              <p>{t.banco}</p>
-              <p className="text-sm text-gray-500">{t.numero}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-white shadow p-6 rounded-2xl mb-6">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={autorizado}
-            onChange={() => setAutorizado(!autorizado)}
-          />
-          <span className="text-sm">Autorizo a otra persona a usar mi crédito disponible</span>
-        </label>
-        {autorizado && (
-          <p className="mt-2 text-sm text-gray-600">Se reflejará el uso en tu historial de crédito.</p>
-        )}
-      </div>
-
-      {referido && (
-        <div className="bg-white shadow p-6 rounded-2xl mb-6">
-          <h2 className="text-lg font-semibold">Tu referido: <span className="text-blue-600">{referido}</span></h2>
-          <p className="text-sm text-gray-600">Puntos acumulados por esta persona: {puntosReferido}</p>
-        </div>
-      )}
-
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <button
-          onClick={() => alert("Orden procesada con éxito ✅")}
-          disabled={!tarjetaSeleccionada}
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-2xl shadow disabled:opacity-50"
-        >
-          Pagar Orden
-        </button>
-
-        <button
-          onClick={generarWalletDigital}
-          className="bg-black hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded-2xl shadow"
-        >
-          Agregar a Wallet Digital (Apple Pay)
-        </button>
-      </div>
-
-      {walletGenerada && (
-        <div className="mt-6 bg-green-100 border border-green-300 text-green-800 p-4 rounded-xl shadow">
-          Tu tarjeta ha sido agregada exitosamente a tu Wallet Digital. 🎉
-        </div>
-      )}
     </div>
   )
 }
