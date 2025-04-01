@@ -7,15 +7,15 @@ const tarjetas = [
 ]
 
 export default function Wallet() {
-  const { total, credit, puntos, referido, puntosReferido } = useOrder()
+  const { total = 0, credit = 0, puntos = 0, referido = null, puntosReferido = 0 } = useOrder()
   const [tipoPago, setTipoPago] = useState("mensual")
   const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(null)
   const [autorizado, setAutorizado] = useState(false)
   const [walletGenerada, setWalletGenerada] = useState(false)
 
-  const fee = total * 0.2
-  const totalConFee = total + fee
-  const puntosGenerados = Math.floor(total / 2)
+  const fee = typeof total === "number" ? total * 0.2 : 0
+  const totalConFee = typeof total === "number" ? total + fee : 0
+  const puntosGenerados = typeof total === "number" ? Math.floor(total / 2) : 0
 
   const cuotas = tipoPago === "mensual"
     ? Array.from({ length: 6 }, (_, i) => totalConFee / 6)
@@ -35,10 +35,10 @@ export default function Wallet() {
 
       <div className="bg-white shadow p-6 rounded-2xl mb-6">
         <h2 className="text-xl font-semibold mb-2">Resumen de Pago</h2>
-        <p>Total de la orden: <span className="font-medium">${total.toFixed(2)}</span></p>
-        <p>Fee DineFlexx (20%): <span className="font-medium">${fee.toFixed(2)}</span></p>
-        <p>Total a pagar: <span className="font-bold text-blue-600">${totalConFee.toFixed(2)}</span></p>
-        <p>Crédito disponible: <span className="text-green-600 font-semibold">${credit.toFixed(2)}</span></p>
+        <p>Total de la orden: <span className="font-medium">${typeof total === "number" ? total.toFixed(2) : "Cargando..."}</span></p>
+        <p>Fee DineFlexx (20%): <span className="font-medium">${typeof fee === "number" ? fee.toFixed(2) : "Cargando..."}</span></p>
+        <p>Total a pagar: <span className="font-bold text-blue-600">${typeof totalConFee === "number" ? totalConFee.toFixed(2) : "Cargando..."}</span></p>
+        <p>Crédito disponible: <span className="text-green-600 font-semibold">${typeof credit === "number" ? credit.toFixed(2) : "Cargando..."}</span></p>
         <p>Puntos por esta compra: <span className="text-purple-600 font-semibold">+{puntosGenerados}</span></p>
       </div>
 
@@ -56,7 +56,7 @@ export default function Wallet() {
         </div>
         <ul className="text-sm text-gray-700 list-disc list-inside">
           {cuotas.map((c, i) => (
-            <li key={i}>Cuota {i + 1}: ${c.toFixed(2)}</li>
+            <li key={i}>Cuota {i + 1}: ${typeof c === "number" ? c.toFixed(2) : "-"}</li>
           ))}
         </ul>
       </div>
