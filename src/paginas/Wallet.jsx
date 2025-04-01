@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../supabaseClient"
-import { BookCheck, Clock, CreditCard } from "lucide-react"
+import { BookCheck, Clock } from "lucide-react"
 
 export default function Wallet() {
   const [userId, setUserId] = useState(null)
@@ -46,18 +46,28 @@ export default function Wallet() {
   const pagoPorCuota = (restante / cuotas).toFixed(2)
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 font-sans">
+    <div className="max-w-5xl mx-auto px-4 py-6 font-sans">
       <div className="flex items-center gap-4 mb-6">
-        <img src="/images/logo4.png" alt="Wallet" className="h-12 w-auto object-contain shadow" />
-        <h1 className="text-3xl font-bold tracking-tight text-gray-800">DineFlexx Wallet</h1>
+        <img
+          src="/images/foto4.jpg"
+          alt="DineFlexx Restaurant"
+          className="h-16 w-auto object-contain"
+        />
       </div>
 
-      <div className="bg-white shadow rounded-2xl p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-2">💳 Crédito Disponible</h2>
-        <p className="text-2xl text-green-600 font-bold mb-2">${credit}</p>
-        <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-4 rounded-xl shadow hover:scale-105 transition">
-          Añadir a Apple Wallet
-        </button>
+      <div className="sticky top-4 z-10 bg-white shadow-lg rounded-2xl p-6 mb-8 border border-gray-200">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">💳 Crédito Disponible</h2>
+            <p className="text-2xl text-green-600 font-bold mb-2">${credit}</p>
+          </div>
+          <div className="flex flex-col items-start gap-2">
+            <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-4 rounded-xl shadow hover:scale-105 transition">
+              Añadir a Apple Wallet
+            </button>
+            <p className="text-sm text-gray-500">Tarjeta vinculada: <span className="font-medium text-black">•••• 4242</span></p>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white shadow rounded-2xl p-6 mb-6">
@@ -90,7 +100,7 @@ export default function Wallet() {
 
         <div className="text-gray-800 space-y-1">
           <p>💰 Cuota inicial: <strong>${cuotaInicial.toFixed(2)}</strong></p>
-          <p>📆 Pagos mensuales: <strong>{cuotas} x ${pagoPorCuota}</strong></p>
+          <p>📆 Pagos: <strong>{cuotas} x ${pagoPorCuota}</strong></p>
         </div>
       </div>
 
