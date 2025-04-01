@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { Routes, Route, Navigate } from "react-router-dom"
 import { supabase } from "./supabaseClient"
 import Wallet from "./paginas/Wallet"
-import Perfil from "./paginas/Perfil"
+import Perfil from "./paginas/Perfil.jsx"
 import Menu from "./paginas/Menu"
 import Login from "./Login"
 
