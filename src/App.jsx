@@ -1,32 +1,41 @@
 // src/App.jsx
-import { useEffect, useState } from "react"
-import { Routes, Route, Navigate } from "react-router-dom"
-import { supabase } from "./supabaseClient"
-import Wallet from "./paginas/Wallet"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import Landing from "./Landing.jsx"
+import Menu from "./paginas/Menu.jsx"
+import Wallet from "./paginas/Wallet.jsx"
 import Perfil from "./paginas/Perfil.jsx"
-import Menu from "./paginas/Menu"
-import Login from "./Login"
+import Soporte from "./paginas/Soporte.jsx"
+import Login from "./Login.jsx"
+import Register from "./Register.jsx"
+import Dashboard from "./Dashboard.jsx"
+import ProtectedRoute from "./ProtectedRoute.jsx"
+import LogoutButton from "./components/LogoutButton.jsx"
+import GeoNotifier from "./components/GeoNotifier.jsx"
+import ChatGastronomico from "./components/ChatGastronomico.jsx"
+import { OrderProvider } from "./context/OrderContext.jsx"
 
 export default function App() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      setLoading(false)
-    })
-  }, [])
-
-  if (loading) return <div className="text-center mt-20 text-gray-600">Verificando acceso...</div>
-
   return (
-    <Routes>
-      <Route path="/" element={user ? <Navigate to="/menu" /> : <Navigate to="/login" />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/menu" element={user ? <Menu /> : <Navigate to="/login" />} />
-      <Route path="/perfil" element={user ? <Perfil /> : <Navigate to="/login" />} />
-      <Route path="/wallet" element={user ? <Wallet /> : <Navigate to="/login" />} />
-    </Routes>
+    <OrderProvider>
+      <Router>
+        <GeoNotifier />
+        <ChatGastronomico />
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* Rutas protegidas */}
+          <Route path="/menu" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
+          <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+          <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+          <Route path="/soporte" element={<ProtectedRoute><Soporte /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+
+          {/* Cierre de sesión */}
+          <Route path="/logout" element={<LogoutButton />} />
+        </Routes>
+      </Router>
+    </OrderProvider>
   )
 }
