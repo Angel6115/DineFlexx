@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { supabase } from "../supabaseClient"
 
 const menuData = {
@@ -27,78 +27,94 @@ const menuData = {
 
 export default function Menu() {
   const [orden, setOrden] = useState([])
-  const [puntos, setPuntos] = useState(0)
-  const [credito, setCredito] = useState(1500)
+  const [credit, setCredit] = useState(1500)
 
   const handleAgregar = (item) => {
-    setOrden([...orden, item])
-    setPuntos((prev) => prev + 10)
-    setCredito((prev) => prev - item.precio)
+    setOrden((prev) => [...prev, item])
+    setCredit((prev) => prev - item.precio)
   }
 
+  const total = orden.reduce((acc, i) => acc + i.precio, 0)
+
   return (
-    <div className="relative font-sans">
-      {/* Header sticky */}
-      <div className="sticky top-0 z-50 bg-white shadow-md p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src="/images/logo4.png" alt="logo" className="h-10 w-auto object-contain" />
-          <h1 className="text-2xl font-bold tracking-tight text-gray-800">DineFlexx Restaurant</h1>
+    <div className="font-sans">
+      <div className="flex justify-between items-center px-4 py-6 bg-white shadow">
+        <div className="flex items-center gap-4">
+          <img src="/images/logo4.jpg" alt="logo" className="h-12 object-contain" />
+          <h1 className="text-2xl font-bold text-gray-800">DineFlexx Restaurant</h1>
         </div>
-        <div className="text-right">
-          <p className="text-green-600 font-semibold">💰 Crédito: ${credito.toFixed(2)}</p>
-          <p className="text-blue-600 font-semibold">🎁 Puntos: {puntos}</p>
+        <div className="hidden md:block">
+          <p className="text-green-600 font-semibold">Crédito: ${credit.toFixed(2)}</p>
         </div>
       </div>
 
-      {/* Chef Recommendation */}
-      <div className="bg-yellow-100 p-5 shadow-inner flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold mb-1">👨‍🍳 Recomendación del Chef</h2>
-          <p className="text-gray-700">Risotto con parmesano y champiñones</p>
-          <p className="text-green-600 text-sm mb-2">🎯 Puntos adicionales con este plato</p>
-          <button
-            onClick={() => handleAgregar({ nombre: "Risotto", precio: 12.75 })}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl mt-2 shadow"
-          >
-            + Agregar Risotto ($12.75)
-          </button>
-        </div>
-        <img
-          src="/images/comidas/risotto.jpg"
-          alt="Risotto"
-          className="w-48 h-32 object-cover rounded-xl shadow"
-        />
-      </div>
-
-      {/* Secciones del menú */}
-      <div className="p-6 max-w-7xl mx-auto">
-        {Object.entries(menuData).map(([categoria, items]) => (
-          <div key={categoria} className="mb-10">
-            <h2 className="text-2xl font-bold capitalize mb-4 text-gray-700">{categoria}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
-              {items.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white rounded-2xl p-4 shadow hover:shadow-lg transition flex flex-col"
-                >
-                  <img
-                    src={item.imagen}
-                    alt={item.nombre}
-                    className="h-40 object-contain mb-3 rounded-xl"
-                  />
-                  <h3 className="text-lg font-semibold text-gray-800">{item.nombre}</h3>
-                  <p className="text-blue-600 font-bold text-sm mb-3">${item.precio.toFixed(2)}</p>
-                  <button
-                    onClick={() => handleAgregar(item)}
-                    className="bg-blue-600 text-white py-2 rounded-xl mt-auto hover:bg-blue-700"
-                  >
-                    + Agregar
-                  </button>
-                </div>
-              ))}
+      <div className="grid md:grid-cols-4">
+        <div className="md:col-span-3 p-6">
+          <div className="bg-yellow-100 border border-yellow-300 p-5 rounded-2xl shadow-xl mb-8 sticky top-4 z-10">
+            <h2 className="text-xl md:text-2xl font-bold mb-1">👨‍🍳 Recomendación del Chef</h2>
+            <p className="text-gray-700">Risotto con parmesano y champiñones</p>
+            <img
+              src="/images/comidas/risotto.jpg"
+              className="w-full max-h-48 object-cover rounded-xl shadow my-3"
+              alt="Chef Recomendación"
+            />
+            <div className="flex justify-between items-center">
+              <p className="font-bold text-lg">$12.75</p>
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700"
+                onClick={() => handleAgregar({ nombre: "Risotto", precio: 12.75 })}
+              >
+                + Agregar
+              </button>
             </div>
           </div>
-        ))}
+
+          {Object.entries(menuData).map(([categoria, items]) => (
+            <div key={categoria} className="mb-12">
+              <h2 className="text-2xl font-bold mb-4 capitalize text-gray-800">{categoria}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {items.map((item, idx) => (
+                  <div key={idx} className="bg-white rounded-2xl p-4 shadow flex flex-col">
+                    <img
+                      src={item.imagen}
+                      alt={item.nombre}
+                      className="h-40 w-full object-cover rounded-xl mb-4"
+                    />
+                    <h3 className="text-lg font-bold text-gray-800">{item.nombre}</h3>
+                    <p className="text-blue-600 font-semibold">${item.precio.toFixed(2)}</p>
+                    <button
+                      onClick={() => handleAgregar(item)}
+                      className="mt-auto bg-blue-600 text-white py-2 rounded-xl mt-4 hover:bg-blue-700"
+                    >
+                      + Agregar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-6 sticky top-4 h-fit bg-white shadow-xl rounded-2xl">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">🧾 Tu Orden</h2>
+          {orden.length === 0 ? (
+            <p className="text-gray-500">No has añadido nada aún.</p>
+          ) : (
+            <ul className="divide-y divide-gray-200 mb-4">
+              {orden.map((item, i) => (
+                <li key={i} className="py-2 flex justify-between">
+                  <span>{item.nombre}</span>
+                  <span className="font-semibold text-sm">${item.precio.toFixed(2)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <p className="text-lg font-bold text-gray-700">Total: ${total.toFixed(2)}</p>
+          <button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-xl">
+            Continuar al Checkout
+          </button>
+        </div>
       </div>
     </div>
   )

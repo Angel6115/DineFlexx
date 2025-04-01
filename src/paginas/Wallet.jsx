@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../supabaseClient"
-import { BookCheck, Clock } from "lucide-react"
+import { BookCheck, Clock, CreditCard } from "lucide-react"
 
 export default function Wallet() {
   const [userId, setUserId] = useState(null)
@@ -48,11 +48,8 @@ export default function Wallet() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 font-sans">
       <div className="flex items-center gap-4 mb-6">
-        <img
-          src="/images/foto4.jpg"
-          alt="DineFlexx Restaurant"
-          className="h-16 w-auto object-contain"
-        />
+        <img src="/images/logo4.png" alt="Wallet" className="h-12 w-auto object-contain" />
+        <h1 className="text-3xl font-bold tracking-tight text-gray-800">DineFlexx Wallet</h1>
       </div>
 
       <div className="sticky top-4 z-10 bg-white shadow-lg rounded-2xl p-6 mb-8 border border-gray-200">
