@@ -1,3 +1,4 @@
+// src/context/OrderContext.jsx
 import { createContext, useContext, useState } from "react"
 
 const OrderContext = createContext()
@@ -5,6 +6,9 @@ const OrderContext = createContext()
 export function OrderProvider({ children }) {
   const [orden, setOrden] = useState([])
   const [puntos, setPuntos] = useState(0)
+  const [credit, setCredit] = useState(1500)
+  const [referido, setReferido] = useState(null)
+  const [puntosReferido, setPuntosReferido] = useState(0)
 
   const agregarItem = (item) => {
     setOrden((prev) => [...prev, item])
@@ -16,16 +20,22 @@ export function OrderProvider({ children }) {
     setPuntos(0)
   }
 
-  const total = orden.reduce((acc, item) => acc + item.precio, 0)
+  const total = orden.reduce((acc, item) => acc + (item.precio || 0), 0)
 
   return (
     <OrderContext.Provider
       value={{
         orden,
         puntos,
+        credit,
+        setCredit,
         agregarItem,
         vaciarOrden,
-        total
+        total,
+        referido,
+        setReferido,
+        puntosReferido,
+        setPuntosReferido
       }}
     >
       {children}
@@ -33,4 +43,10 @@ export function OrderProvider({ children }) {
   )
 }
 
-export const useOrder = () => useContext(OrderContext)
+export const useOrder = () => {
+  const context = useContext(OrderContext)
+  if (!context) {
+    throw new Error("useOrder debe usarse dentro de un OrderProvider")
+  }
+  return context
+}

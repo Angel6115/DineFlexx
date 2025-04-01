@@ -1,65 +1,53 @@
-// src/Dashboard.jsx
+// src/paginas/Dashboard.jsx
 import { useEffect, useState } from "react"
-import { useOrder } from "./context/OrderContext"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { supabase } from "../supabaseClient"
+import { useOrder } from "../context/OrderContext"
+import DarkModeToggle from "../components/DarkModeToggle"
 import { motion } from "framer-motion"
 
 export default function Dashboard() {
-  const { puntos, credit, referido, puntosReferido } = useOrder()
-  const [historial, setHistorial] = useState([])
+  const { puntos } = useOrder()
+  const [usuarios, setUsuarios] = useState([])
 
   useEffect(() => {
-    // Simulamos historial con datos mock
-    setHistorial([
-      { mes: "Ene", puntos: 60 },
-      { mes: "Feb", puntos: 90 },
-      { mes: "Mar", puntos: 120 },
-      { mes: "Abr", puntos: puntos }
-    ])
-  }, [puntos])
+    const fetchUsuarios = async () => {
+      const { data, error } = await supabase.from("autorizados").select("*").order("created_at", { ascending: false })
+      if (data) setUsuarios(data)
+    }
+    fetchUsuarios()
+  }, [])
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="max-w-4xl mx-auto p-6 font-sans text-gray-800 dark:text-white"
+      className="max-w-4xl mx-auto p-6 font-sans bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen"
     >
-      <h1 className="text-3xl font-bold mb-6">📊 Resumen de Actividad</h1>
-
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white dark:bg-gray-900 shadow rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-2">Crédito Disponible</h2>
-          <p className="text-2xl font-bold text-green-600">${credit.toFixed(2)}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-900 shadow rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-2">Puntos Acumulados</h2>
-          <p className="text-2xl font-bold text-blue-600">{puntos}</p>
-        </div>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Dashboard DineFlexx</h1>
+        <DarkModeToggle />
       </div>
 
-      <div className="bg-white dark:bg-gray-900 shadow rounded-2xl p-6 mb-8">
-        <h2 className="text-lg font-semibold mb-4">📈 Puntos Generados (Mensual)</h2>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={historial}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="mes" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="puntos" fill="#2563eb" radius={[6, 6, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <p className="mb-4 text-sm text-gray-500 dark:text-gray-300">
+        Puntos totales actuales: <span className="text-purple-600 font-semibold">{puntos}</span>
+      </p>
 
-      {referido && (
-        <div className="bg-white dark:bg-gray-900 shadow rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-2">🎉 Actividad de tu referido</h2>
-          <p className="text-blue-500 font-medium">{referido}</p>
-          <p className="text-sm text-gray-400 dark:text-gray-300">
-            Puntos generados gracias a esta persona: <span className="font-semibold">{puntosReferido}</span>
-          </p>
-        </div>
-      )}
+      <h2 className="text-xl font-semibold mb-3">Autorizaciones Recientes</h2>
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+        {usuarios.length === 0 ? (
+          <p className="text-sm text-gray-500">No hay autorizaciones registradas.</p>
+        ) : (
+          <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+            {usuarios.map((u, i) => (
+              <li key={i} className="py-3 flex justify-between">
+                <span>{u.created_at.slice(0, 10)} - {u.nombre}</span>
+                <span className="text-blue-600 font-medium">${u.monto.toFixed(2)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </motion.div>
   )
 }
