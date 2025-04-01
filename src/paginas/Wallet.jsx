@@ -1,6 +1,7 @@
 // Wallet.jsx
 import { useState, useEffect } from "react"
 import { useOrder } from "../context/OrderContext"
+import { supabase } from "../supabaseClient"
 import DarkModeToggle from "../components/DarkModeToggle"
 import toast, { Toaster } from "react-hot-toast"
 
@@ -8,12 +9,6 @@ const tarjetas = [
   { id: 1, tipo: "Débito", banco: "Banco Nacional", numero: "**** 1234" },
   { id: 2, tipo: "Cuenta de Cheques", banco: "Interbank", numero: "**** 5678" },
   { id: 3, tipo: "ATH Móvil", banco: "ATH PR", numero: "ath@cliente" }
-]
-
-const historialTransacciones = [
-  { id: 1, fecha: "2025-03-28", tipo: "Pago semanal", monto: 18.75 },
-  { id: 2, fecha: "2025-03-22", tipo: "Wallet Digital", monto: 102.50 },
-  { id: 3, fecha: "2025-03-15", tipo: "Autorizado a otro", monto: 45.00 },
 ]
 
 export default function Wallet() {
@@ -35,13 +30,28 @@ export default function Wallet() {
   const [ordenExitosa, setOrdenExitosa] = useState(false)
   const [propina, setPropina] = useState(0.18)
   const [nombreAutorizado, setNombreAutorizado] = useState("")
+  const [userId, setUserId] = useState(null)
+  const [autorizaciones, setAutorizaciones] = useState([])
 
   useEffect(() => {
-    if (ordenExitosa) {
-      setTotal(0)
-      setWalletGenerada(false)
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser()
+      if (data?.user) {
+        setUserId(data.user.id)
+        fetchAutorizaciones(data.user.id)
+      }
     }
-  }, [ordenExitosa])
+    fetchUser()
+  }, [])
+
+  const fetchAutorizaciones = async (uid) => {
+    const { data } = await supabase
+      .from("autorizados")
+      .select("nombre, monto, created_at")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: false })
+    if (data) setAutorizaciones(data)
+  }
 
   const fee = total * 0.2
   const propinaTotal = total * propina
@@ -64,15 +74,25 @@ export default function Wallet() {
     toast.success("Tarjeta digital agregada a Wallet ✅")
   }
 
-  const confirmarAutorizacion = () => {
+  const confirmarAutorizacion = async () => {
     setConfirmarAutorizado(false)
-    toast.success(`Crédito autorizado a ${nombreAutorizado}`)
+    if (!userId || !nombreAutorizado || totalConFee === 0) return
+    const { error } = await supabase.from("autorizados").insert({
+      user_id: userId,
+      nombre: nombreAutorizado,
+      monto: totalConFee
+    })
+    if (!error) {
+      toast.success(`Crédito autorizado a ${nombreAutorizado}`)
+      fetchAutorizaciones(userId)
+    } else {
+      toast.error("Error al autorizar crédito")
+    }
   }
 
   return (
     <div className="max-w-4xl mx-auto p-6 font-sans bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen">
       <Toaster position="top-center" reverseOrder={false} />
-
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
           <img src="/images/logo3.jpg" alt="DineFlexx" className="h-16 w-16 object-contain" />
@@ -175,15 +195,19 @@ export default function Wallet() {
       </div>
 
       <div className="mt-10 bg-white dark:bg-gray-800 shadow p-6 rounded-2xl">
-        <h2 className="text-lg font-semibold mb-4">📜 Historial de Transacciones</h2>
-        <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-          {historialTransacciones.map((h) => (
-            <li key={h.id} className="py-3 flex justify-between">
-              <span>{h.fecha} - {h.tipo}</span>
-              <span className="text-blue-600 font-medium">${h.monto.toFixed(2)}</span>
-            </li>
-          ))}
-        </ul>
+        <h2 className="text-lg font-semibold mb-4">📜 Historial de Autorizaciones</h2>
+        {autorizaciones.length === 0 ? (
+          <p className="text-sm text-gray-500">No hay registros aún.</p>
+        ) : (
+          <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+            {autorizaciones.map((a, i) => (
+              <li key={i} className="py-3 flex justify-between">
+                <span>{a.created_at.slice(0, 10)} - Autorizado a: {a.nombre}</span>
+                <span className="text-blue-600 font-medium">${a.monto.toFixed(2)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   )
