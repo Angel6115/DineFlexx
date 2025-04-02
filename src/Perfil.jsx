@@ -3,7 +3,6 @@ import { useEffect, useState } from "react"
 import { supabase } from "./supabaseClient"
 import { useOrder } from "./context/OrderContext"
 import ChatGastronomico from "./components/ChatGastronomico"
-import { motion } from "framer-motion"
 
 export default function Perfil() {
   const [userId, setUserId] = useState(null)
@@ -69,12 +68,7 @@ export default function Perfil() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="max-w-4xl mx-auto px-4 py-6 font-sans"
-    >
+    <div className="max-w-4xl mx-auto px-4 py-6 font-sans">
       <div className="bg-white shadow rounded-2xl p-6 mb-6 dark:bg-gray-900 dark:text-white">
         <h2 className="text-xl font-semibold mb-2">Crédito Disponible</h2>
         <p className="text-2xl text-green-600 font-bold">${credit?.toFixed(2) ?? "0.00"}</p>
@@ -110,7 +104,7 @@ export default function Perfil() {
 
       {citas.length > 0 && (
         <div className="bg-white shadow rounded-2xl p-6 mb-6 dark:bg-gray-900 dark:text-white">
-          <h2 className="text-xl font-semibold mb-4">📅 Historial de Reservas</h2>
+          <h2 className="text-xl font-semibold mb-4">🗓️ Historial de Reservas</h2>
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {citas.map((res, i) => (
               <li key={i} className="py-3 flex justify-between text-sm">
@@ -123,6 +117,6 @@ export default function Perfil() {
       )}
 
       <ChatGastronomico />
-    </motion.div>
+    </div>
   )
 }

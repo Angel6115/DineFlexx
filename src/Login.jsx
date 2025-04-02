@@ -19,6 +19,7 @@ export default function Login() {
         : await supabase.auth.signUp({ email, password })
 
       if (authError) throw authError
+
       navigate("/menu")
     } catch (err) {
       setError(err.message)
