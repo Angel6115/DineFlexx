@@ -6,35 +6,62 @@ import { useOrder } from "../context/OrderContext"
 export default function Menu() {
   const { agregarItem, credit, puntos } = useOrder()
   const [restaurante, setRestaurante] = useState(null)
-  const [menuItems, setMenuItems] = useState({ comida: [], bebida: [], postre: [] })
+  const [menuItems, setMenuItems] = useState({ comidas: [], bebidas: [], postres: [] })
 
   useEffect(() => {
     const fetchRestauranteYMenu = async () => {
-      const { data: restaurantes } = await supabase.from("restaurantes").select("*").limit(1)
-      if (!restaurantes || restaurantes.length === 0) return
+      try {
+        const { data: restaurantes, error: restError } = await supabase
+          .from("restaurantes")
+          .select("*")
+          .limit(1)
 
-      const res = restaurantes[0]
-      setRestaurante(res)
-
-      const { data: items } = await supabase
-        .from("menu_items")
-        .select("*")
-        .eq("restaurante_id", res.id)
-
-      const agrupado = { comida: [], bebida: [], postre: [] }
-      items?.forEach((item) => {
-        if (agrupado[item.tipo]) {
-          agrupado[item.tipo].push(item)
+        if (restError) {
+          console.error("Error cargando restaurante:", restError)
+          return
         }
-      })
-      setMenuItems(agrupado)
+
+        if (!restaurantes || restaurantes.length === 0) {
+          console.warn("No hay restaurantes registrados.")
+          setRestaurante(null)
+          return
+        }
+
+        const res = restaurantes[0]
+        setRestaurante(res)
+
+        const { data: items, error: itemsError } = await supabase
+          .from("menu_items")
+          .select("*")
+          .eq("restaurante_id", res.id)
+
+        if (itemsError) {
+          console.error("Error cargando menú:", itemsError)
+          return
+        }
+
+        const agrupado = { comidas: [], bebidas: [], postres: [] }
+        items?.forEach((item) => {
+          if (agrupado[item.tipo]) {
+            agrupado[item.tipo].push(item)
+          }
+        })
+
+        setMenuItems(agrupado)
+      } catch (err) {
+        console.error("Error general:", err)
+      }
     }
 
     fetchRestauranteYMenu()
   }, [])
 
-  if (!restaurante) {
-    return <p className="p-6 text-center text-gray-600 dark:text-gray-300">Cargando restaurante...</p>
+  if (restaurante === null) {
+    return (
+      <p className="p-6 text-center text-red-500 font-semibold">
+        No se encontró ningún restaurante registrado.
+      </p>
+    )
   }
 
   return (
