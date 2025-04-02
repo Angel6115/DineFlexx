@@ -3,38 +3,47 @@ import { useEffect, useState } from "react"
 import { supabase } from "../supabaseClient"
 import { useOrder } from "../context/OrderContext"
 
-const menuData = {
-  comidas: [
-    { nombre: "Bruschetta", precio: 7.5, imagen: "/images/comidas/bruschetta.jpg" },
-    { nombre: "Paella", precio: 14.99, imagen: "/images/comidas/paella.jpg" },
-    { nombre: "Pasta", precio: 11.5, imagen: "/images/comidas/pasta.jpg" },
-    { nombre: "Sopa de Tomate", precio: 6.25, imagen: "/images/comidas/sopa-tomate.jpg" },
-    { nombre: "Tacos", precio: 9.5, imagen: "/images/comidas/tacos.jpg" },
-    { nombre: "Tomahawk", precio: 24.99, imagen: "/images/comidas/tomahawk.jpg" }
-  ],
-  bebidas: [
-    { nombre: "Limonada", precio: 3.5, imagen: "/images/bebidas/limonada.jpg" },
-    { nombre: "Mojito", precio: 5.5, imagen: "/images/bebidas/mojito.jpg" },
-    { nombre: "Coca Cola", precio: 2.75, imagen: "/images/bebidas/coca_cola.jpg" },
-    { nombre: "Cabernet", precio: 4.0, imagen: "/images/bebidas/cabernet.jpg" },
-    { nombre: "Pinot Grigio", precio: 4.5, imagen: "/images/bebidas/pinot.jpg" },
-    { nombre: "Rose", precio: 4.5, imagen: "/images/bebidas/rose.jpg" },
-    { nombre: "Moet", precio: 5.0, imagen: "/images/bebidas/moet.jpg" }
-  ],
-  postres: [
-    { nombre: "Flan", precio: 4.0, imagen: "/images/postres/flan.jpg" },
-    { nombre: "Tiramisu", precio: 4.75, imagen: "/images/postres/tiramisu.jpg" }
-  ]
-}
-
 export default function Menu() {
-  const { agregarItem, total, puntos, credit } = useOrder()
+  const { agregarItem, credit, puntos } = useOrder()
+  const [restaurante, setRestaurante] = useState(null)
+  const [menuItems, setMenuItems] = useState({ comidas: [], bebidas: [], postres: [] })
+
+  useEffect(() => {
+    const fetchRestauranteYMenu = async () => {
+      const { data: restaurantes } = await supabase.from("restaurantes").select("*").limit(1)
+      if (!restaurantes || restaurantes.length === 0) return
+
+      const res = restaurantes[0]
+      setRestaurante(res)
+
+      const { data: items } = await supabase
+        .from("menu_items")
+        .select("*")
+        .eq("restaurante_id", res.id)
+
+      const agrupado = { comidas: [], bebidas: [], postres: [] }
+      items?.forEach((item) => {
+        if (agrupado[item.tipo]) {
+          agrupado[item.tipo].push(item)
+        }
+      })
+      setMenuItems(agrupado)
+    }
+
+    fetchRestauranteYMenu()
+  }, [])
+
+  if (!restaurante) {
+    return <p className="p-6 text-center text-gray-600 dark:text-gray-300">Cargando restaurante...</p>
+  }
 
   return (
     <div className="p-4 max-w-7xl mx-auto font-sans">
       <div className="flex items-center gap-4 mb-6">
         <img src="/images/logo3.jpg" alt="DineFlexx" className="h-14 w-auto object-contain shadow" />
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-800 dark:text-white">DineFlexx Restaurant</h1>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-800 dark:text-white">
+          {restaurante.nombre}
+        </h1>
       </div>
 
       <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-xl mb-8 flex flex-col md:flex-row md:items-center md:justify-between sticky top-0 z-10">
@@ -48,33 +57,37 @@ export default function Menu() {
         </div>
       </div>
 
-      <div className="bg-yellow-100 dark:bg-yellow-200 border border-yellow-300 p-5 rounded-2xl shadow-xl mb-10 sticky top-24 z-10">
-        <h2 className="text-xl md:text-2xl font-bold mb-1">👨‍🍳 Recomendación del Chef</h2>
-        <p className="text-gray-700">Risotto con parmesano y champiñones</p>
-        <p className="text-green-600 text-sm mb-3">🎯 Obtienes puntos adicionales con este plato</p>
+      <div className="bg-yellow-100 dark:bg-yellow-200 border border-yellow-300 p-4 rounded-2xl shadow-xl mb-10 sticky top-24 z-10">
+        <h2 className="text-lg md:text-xl font-bold mb-1">👨‍🍳 Recomendación del Chef</h2>
+        <p className="text-gray-700">{restaurante.recomendacion}</p>
         <img
-          src="/images/comidas/risotto.jpg"
-          alt="Risotto"
-          className="w-full max-h-60 object-cover rounded-xl shadow mb-3"
+          src={restaurante.imagen}
+          alt="Recomendación"
+          className="w-full h-40 object-cover rounded-xl shadow my-3"
         />
-        <div className="flex justify-between items-center">
-          <p className="text-lg font-semibold">$12.75</p>
+        <p className="text-sm text-gray-600 mb-2">📍 {restaurante.ubicacion} - {restaurante.distancia}</p>
+        <div className="flex flex-col sm:flex-row justify-between gap-3">
           <button
-            onClick={() => agregarItem({ nombre: "Risotto", precio: 12.75 })}
+            onClick={() => agregarItem({ nombre: restaurante.recomendacion, precio: 12.75 })}
             className="bg-blue-600 text-white px-5 py-2 rounded-xl shadow hover:scale-105 transition"
           >
             + Agregar
           </button>
+          <button className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl shadow transition">
+            📅 Reservar Mesa
+          </button>
         </div>
       </div>
 
-      {Object.entries(menuData).map(([seccion, items]) => (
+      {Object.entries(menuItems).map(([seccion, items]) => (
         <div key={seccion} className="mb-14">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 capitalize text-gray-800 dark:text-white">{seccion}</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 capitalize text-gray-800 dark:text-white">
+            {seccion}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {items.map((item, idx) => (
+            {items.map((item) => (
               <div
-                key={idx}
+                key={item.id}
                 className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md hover:shadow-xl transition flex flex-col justify-between"
               >
                 <img
