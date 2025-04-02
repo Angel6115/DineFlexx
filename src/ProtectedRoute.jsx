@@ -4,19 +4,27 @@ import { Navigate } from "react-router-dom"
 import { supabase } from "./supabaseClient"
 
 export default function ProtectedRoute({ children }) {
-  const [loading, setLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(null)
 
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession()
-      setIsAuthenticated(!!data?.session)
-      setLoading(false)
+      setIsAuthenticated(!!data.session)
     }
     checkSession()
   }, [])
 
-  if (loading) return <div className="p-6 text-center">Verificando acceso...</div>
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600 dark:text-gray-300">Verificando acceso...</p>
+      </div>
+    )
+  }
 
-  return isAuthenticated ? children : <Navigate to="/login" replace />
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
 }
