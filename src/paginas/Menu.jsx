@@ -6,7 +6,7 @@ import { useOrder } from "../context/OrderContext"
 export default function Menu() {
   const { agregarItem, credit, puntos } = useOrder()
   const [restaurante, setRestaurante] = useState(null)
-  const [menuItems, setMenuItems] = useState({ comidas: [], bebidas: [], postres: [] })
+  const [menuItems, setMenuItems] = useState({})
 
   useEffect(() => {
     const fetchRestauranteYMenu = async () => {
@@ -40,13 +40,10 @@ export default function Menu() {
           return
         }
 
-        const agrupado = { comidas: [], bebidas: [], postres: [] }
-
+        const agrupado = {}
         items?.forEach((item) => {
-          const tipoKey = item.tipo?.toLowerCase()
-          if (agrupado[tipoKey]) {
-            agrupado[tipoKey].push(item)
-          }
+          if (!agrupado[item.tipo]) agrupado[item.tipo] = []
+          agrupado[item.tipo].push(item)
         })
 
         setMenuItems(agrupado)
@@ -92,7 +89,7 @@ export default function Menu() {
         <img
           src={restaurante.imagen}
           alt="Recomendación"
-          className="w-full h-48 object-contain rounded-xl shadow my-3"
+          className="w-full h-60 object-contain rounded-xl shadow my-3"
         />
         <p className="text-sm text-gray-600 mb-2">📍 {restaurante.ubicacion} - {restaurante.distancia}</p>
         <div className="flex flex-col sm:flex-row justify-between gap-3">
