@@ -6,7 +6,7 @@ import { useOrder } from "../context/OrderContext"
 export default function Menu() {
   const { agregarItem, credit, puntos } = useOrder()
   const [restaurante, setRestaurante] = useState(null)
-  const [menuItems, setMenuItems] = useState({})
+  const [menuItems, setMenuItems] = useState({ comida: [], bebida: [], postre: [] })
 
   useEffect(() => {
     const fetchRestauranteYMenu = async () => {
@@ -16,12 +16,7 @@ export default function Menu() {
           .select("*")
           .limit(1)
 
-        if (restError) {
-          console.error("Error cargando restaurante:", restError)
-          return
-        }
-
-        if (!restaurantes || restaurantes.length === 0) {
+        if (restError || !restaurantes || restaurantes.length === 0) {
           console.warn("No hay restaurantes registrados.")
           setRestaurante(null)
           return
@@ -40,10 +35,12 @@ export default function Menu() {
           return
         }
 
-        const agrupado = {}
-        items?.forEach((item) => {
-          if (!agrupado[item.tipo]) agrupado[item.tipo] = []
-          agrupado[item.tipo].push(item)
+        const agrupado = { comida: [], bebida: [], postre: [] }
+        items.forEach((item) => {
+          const tipo = item.tipo?.toLowerCase().replace(/s$/, "")
+          if (agrupado[tipo]) {
+            agrupado[tipo].push(item)
+          }
         })
 
         setMenuItems(agrupado)
@@ -89,7 +86,7 @@ export default function Menu() {
         <img
           src={restaurante.imagen}
           alt="Recomendación"
-          className="w-full h-60 object-contain rounded-xl shadow my-3"
+          className="w-full h-60 object-cover rounded-xl shadow my-3"
         />
         <p className="text-sm text-gray-600 mb-2">📍 {restaurante.ubicacion} - {restaurante.distancia}</p>
         <div className="flex flex-col sm:flex-row justify-between gap-3">
