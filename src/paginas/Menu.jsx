@@ -41,9 +41,11 @@ export default function Menu() {
         }
 
         const agrupado = { comidas: [], bebidas: [], postres: [] }
+
         items?.forEach((item) => {
-          if (agrupado[item.tipo]) {
-            agrupado[item.tipo].push(item)
+          const tipoKey = item.tipo?.toLowerCase()
+          if (agrupado[tipoKey]) {
+            agrupado[tipoKey].push(item)
           }
         })
 
@@ -90,7 +92,7 @@ export default function Menu() {
         <img
           src={restaurante.imagen}
           alt="Recomendación"
-          className="w-full h-40 object-cover rounded-xl shadow my-3"
+          className="w-full h-48 object-contain rounded-xl shadow my-3"
         />
         <p className="text-sm text-gray-600 mb-2">📍 {restaurante.ubicacion} - {restaurante.distancia}</p>
         <div className="flex flex-col sm:flex-row justify-between gap-3">
