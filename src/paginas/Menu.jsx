@@ -37,9 +37,13 @@ export default function Menu() {
 
         const agrupado = { comida: [], bebida: [], postre: [] }
         items.forEach((item) => {
-          const tipo = item.tipo?.toLowerCase().replace(/s$/, "")
-          if (agrupado[tipo]) {
-            agrupado[tipo].push(item)
+          const tipoOriginal = item.tipo?.toLowerCase()
+          if (["comidas", "comida"].includes(tipoOriginal)) {
+            agrupado.comida.push(item)
+          } else if (["bebidas", "bebida"].includes(tipoOriginal)) {
+            agrupado.bebida.push(item)
+          } else if (["postres", "postre"].includes(tipoOriginal)) {
+            agrupado.postre.push(item)
           }
         })
 
