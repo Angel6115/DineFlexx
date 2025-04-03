@@ -6,7 +6,7 @@ import { useOrder } from "../context/OrderContext"
 export default function Menu() {
   const { agregarItem, credit, puntos } = useOrder()
   const [restaurante, setRestaurante] = useState(null)
-  const [menuItems, setMenuItems] = useState({ comida: [], bebida: [], postre: [] })
+  const [menuItems, setMenuItems] = useState({ comidas: [], bebidas: [], postres: [] })
 
   useEffect(() => {
     const fetchRestauranteYMenu = async () => {
@@ -35,16 +35,12 @@ export default function Menu() {
           return
         }
 
-        const agrupado = { comida: [], bebida: [], postre: [] }
+        const agrupado = { comidas: [], bebidas: [], postres: [] }
         items.forEach((item) => {
           const tipoOriginal = item.tipo?.toLowerCase()
-          if (["comidas", "comida"].includes(tipoOriginal)) {
-            agrupado.comida.push(item)
-          } else if (["bebidas", "bebida"].includes(tipoOriginal)) {
-            agrupado.bebida.push(item)
-          } else if (["postres", "postre"].includes(tipoOriginal)) {
-            agrupado.postre.push(item)
-          }
+          if (tipoOriginal === "comidas") agrupado.comidas.push(item)
+          else if (tipoOriginal === "bebidas") agrupado.bebidas.push(item)
+          else if (tipoOriginal === "postres") agrupado.postres.push(item)
         })
 
         setMenuItems(agrupado)
