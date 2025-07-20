@@ -4,9 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DineFlexx</title>
+
+    <!-- icono de la app -->
+    <link rel="apple-touch-icon" sizes="192x192" href="/images/logo3-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/images/logo3-512.png" />
+
+    <!-- manifiesto PWA -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- color de barra de estado en Android -->
+    <meta name="theme-color" content="#1e3a8a" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/index.jsx"></script>
+    
+    <!-- Google Maps JavaScript API para Autocomplete -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCcotv_0G8ETQb-7i25p36Ean0aOOrquOs&libraries=places"
+      async
+      defer
+    ></script>
   </body>
 </html>

@@ -1,7 +1,7 @@
 // src/paginas/Wallet.jsx
 import { useState, useEffect } from "react"
 import { useOrder } from "../context/OrderContext"
-import { supabase } from "../supabaseClient"
+import supabase from "../supabaseClient"; // ✅
 import DarkModeToggle from "../components/DarkModeToggle"
 import toast, { Toaster } from "react-hot-toast"
 import { motion } from "framer-motion"

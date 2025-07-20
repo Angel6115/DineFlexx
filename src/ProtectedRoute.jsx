@@ -1,7 +1,7 @@
 // src/ProtectedRoute.jsx
 import { useEffect, useState } from "react"
 import { Navigate } from "react-router-dom"
-import { supabase } from "./supabaseClient"
+import supabase from "./supabaseClient"
 
 export default function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null)

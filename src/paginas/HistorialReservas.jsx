@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
-import { supabase } from "../supabaseClient"
-
+import supabase from "./supabaseClient"; // ✅"
 export default function HistorialReservas() {
   const [reservas, setReservas] = useState([])
   const [loading, setLoading] = useState(true)

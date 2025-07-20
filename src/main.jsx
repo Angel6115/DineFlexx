@@ -4,17 +4,21 @@ import ReactDOM from "react-dom/client"
 import App from "./App"
 import { BrowserRouter } from "react-router-dom"
 import { OrderProvider } from "./context/OrderContext"
+// Helper para registrar el Service Worker generado por vite-plugin-pwa
+import { registerSW } from "virtual:pwa-register"
+
+// Registrar el SW automáticamente al cargar la app
+registerSW({
+  immediate: true,
+  onRegistered(reg) {
+    console.log("SW registrado 💾", reg)
+  },
+  onRegisterError(err) {
+    console.error("Error al registrar SW:", err)
+  }
+})
 
 const root = document.getElementById("root")
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then((reg) => console.log("SW registrado 💾", reg.scope))
-      .catch((err) => console.error("SW error", err))
-  })
-}
 
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
