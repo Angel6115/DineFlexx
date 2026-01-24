@@ -1,212 +1,395 @@
 // src/Landing.jsx
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Sparkles, CreditCard, Gift, Zap, ArrowRight, Check } from "lucide-react";
 
 export default function Landing() {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
-      className="min-h-screen flex flex-col items-center pt-8 pb-12 px-4 sm:px-6 bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800"
-    >
-      {/* Logo */}
-      <motion.img 
-        src="/images/dlogo1.png"
-        alt="DineFlexx Logo"
-        className="w-[660px] md:w-[660px] h-auto object-contain mt-4 mb-4 hover:scale-105 transition-transform duration-300"
-        whileHover={{ scale: 1.05 }}
-      />
-
-      {/* Eslogan */}
-      <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 italic mb-6 font-medium">
-        “Saborea hoy, paga a tu ritmo”
-      </p>
-
-      {/* Oferta Pre-Venta */}
-      <motion.div 
-        className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white font-bold px-6 py-3 rounded-lg shadow-lg mb-10"
-        initial={{ y: -20 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 300 }}
-      >
-        🎉 Oferta Pre-Venta:
-        <span className="bg-white text-yellow-600 px-2 py-1 rounded mx-2">
-          $1.00 = 10% OFF
-        </span>
-        en tu primera orden
-      </motion.div>
-
-      {/* Título */}
-      <h1 className="text-4xl md:text-6xl font-extrabold text-center mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent px-4">
-        Revoluciona tu experiencia gastronómica
-      </h1>
-
-      {/* Descripción */}
-      <p className="text-lg text-gray-600 dark:text-gray-300 mb-10 text-center max-w-2xl leading-relaxed">
-        La plataforma que combina <strong className="text-blue-600">flexibilidad de pago</strong>, <strong className="text-purple-600">recomendaciones con IA</strong> y un <strong className="text-green-600">sistema de puntos premiun</strong>.
-      </p>
-
-      {/* Botones principales */}
-      <div className="flex flex-wrap gap-4 justify-center mb-16 w-full max-w-2xl">
-        <Link
-          to="/register"
-          className="flex-1 min-w-[160px] text-center bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
-        >
-          Crear cuenta
-        </Link>
-        <Link
-          to="/login"
-          className="flex-1 min-w-[160px] text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
-        >
-          Iniciar sesión
-        </Link>
-        <Link
-          to="/restaurantes"
-          className="flex-1 min-w-[160px] text-center bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md"
-        >
-          Ver restaurantes
-        </Link>
-        <Link
-          to="/registro-restaurante"
-          className="flex-1 min-w-[160px] text-center bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md"
-        >
-          Soy restaurante
-        </Link>
-      </div>
-
-      {/* Beneficios */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full mb-20 px-4">
-        {[
-          {
-            title: "Menú Inteligente",
-            desc: "IA que sugiere platos basados en tus preferencias y alergias",
-            img: "/images/menu.jpg",
-            color: "from-blue-400 to-blue-500"
-          },
-          {
-            title: "Pago Flexible",
-            desc: "Divide tus pagos en cuotas sin intereses o paga completo",
-            img: "/images/pago.jpg",
-            color: "from-purple-400 to-purple-500"
-          },
-          {
-            title: "Puntos Premium",
-            desc: "Gana puntos en cada compra y redímelos en cualquier restaurante",
-            img: "/images/puntos.jpg",
-            color: "from-green-400 to-green-500"
-          }
-        ].map((item, index) => (
-          <motion.div 
-            key={index}
-            className="group bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 dark:border-gray-800 hover-tilt"
-            whileHover={{ y: -5 }}
-          >
-            <div className={`bg-gradient-to-r ${item.color} h-2 rounded-t-lg mb-4`}></div>
-            <div className="overflow-hidden rounded-lg mb-4 h-48">
-              <img
-                src={item.img}
-                alt={item.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-gray-800 dark:text-white">{item.title}</h3>
-            <p className="text-gray-600 dark:text-gray-400">{item.desc}</p>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Testimonios */}
-      <div className="max-w-6xl w-full mb-20 px-4">
-        <h2 className="text-3xl font-bold mb-10 text-center text-gray-800 dark:text-white">
-          Opiniones de <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">nuestros usuarios</span>
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              quote: "Con DineFlexx puedo disfrutar de restaurantes finos pagando en cuotas. ¡Cambió mi vida social!",
-              author: "Carlos M.",
-              role: "Cliente frecuente"
-            },
-            {
-              quote: "La IA me sugirió un plato que nunca hubiera pedido y fue mi favorito. ¡Increíble!",
-              author: "Laura G.",
-              role: "Foodie"
-            },
-            {
-              quote: "Canjeé mis puntos por una cena gratis. El sistema de recompensas es real y funciona.",
-              author: "Felix R.",
-              role: "Influencer"
-            }
-          ].map((testimonial, index) => (
-            <motion.div 
-              key={index}
-              className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
-              whileHover={{ scale: 1.02 }}
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      
+      {/* HERO SECTION - OPTIMIZADO */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            
+            {/* Left: Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="order-2 lg:order-1"
             >
-              <div className="flex items-center mb-4">
-                <div className={`w-10 h-10 rounded-full bg-gradient-to-r ${
-                  index === 0 ? "from-blue-400 to-blue-600" : 
-                  index === 1 ? "from-purple-400 to-purple-600" : "from-green-400 to-green-600"
-                }`}></div>
-                <div className="ml-3">
-                  <p className="font-semibold text-gray-800 dark:text-white">{testimonial.author}</p>
-                  <p className="text-xs text-gray-500">{testimonial.role}</p>
-                </div>
-              </div>
-              <p className="italic text-gray-600 dark:text-gray-300">"{testimonial.quote}"</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+              {/* Promo Badge */}
+              <motion.div 
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-4 py-2 rounded-full mb-5 text-sm font-bold shadow-md"
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Lanzamiento: $1 = 10% OFF en tu primera orden</span>
+              </motion.div>
 
-      {/* Sección para restaurantes */}
-      <div className="max-w-4xl w-full mb-12 px-4 text-center">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 md:p-10 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
-            <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">¿Tienes un restaurante?</span>
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            Únete a la revolución gastronómica y aumenta tus ventas con nuestro sistema inteligente.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 text-left">
-            <ul className="space-y-3">
-              {[
-                "✅ Registro 100% gratuito",
-                "📸 Perfil con fotos profesionales",
-                "🍽️ Menú digital interactivo",
-                "📊 Dashboard de analíticas"
-              ].map((item, i) => (
-                <li key={i} className="flex items-start">
-                  <span className="mr-2 mt-1">{item.split(' ')[0]}</span>
-                  <span>{item.split(' ').slice(1).join(' ')}</span>
-                </li>
-              ))}
-            </ul>
-            <ul className="space-y-3">
-              {[
-                "📍 Geolocalización avanzada",
-                "🤖 Recomendaciones por IA",
-                "💳 Sistema de pagos integrado",
-                "🏆 Programa de premios"
-              ].map((item, i) => (
-                <li key={i} className="flex items-start">
-                  <span className="mr-2 mt-1">{item.split(' ')[0]}</span>
-                  <span>{item.split(' ').slice(1).join(' ')}</span>
-                </li>
-              ))}
-            </ul>
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black text-gray-900 dark:text-white mb-5 leading-tight">
+                Come hoy,{" "}
+                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  paga después
+                </span>
+              </h1>
+
+              <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                La primera plataforma de restaurantes con{" "}
+                <strong className="text-blue-600">Buy Now Pay Later</strong>.
+                Divide en 4 cuotas sin interés + gana puntos por cada orden.
+              </p>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                <Link
+                  to="/register"
+                  className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-7 py-3.5 rounded-xl shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+                >
+                  Crear cuenta gratis
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  to="/restaurantes"
+                  className="inline-flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white font-semibold px-7 py-3.5 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all"
+                >
+                  Ver restaurantes
+                </Link>
+              </div>
+
+              {/* Social Proof */}
+              <div className="flex items-center gap-5 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex -space-x-3">
+                  {[
+                    "from-blue-500 to-blue-600",
+                    "from-purple-500 to-purple-600",
+                    "from-pink-500 to-pink-600",
+                    "from-green-500 to-green-600"
+                  ].map((color, i) => (
+                    <div
+                      key={i}
+                      className={`w-9 h-9 rounded-full bg-gradient-to-br ${color} border-3 border-white dark:border-gray-900 shadow-md`}
+                    />
+                  ))}
+                </div>
+                <p className="font-medium">
+                  <strong className="text-gray-900 dark:text-white text-lg">+2,500</strong> usuarios activos
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Right: Logo + Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="order-1 lg:order-2 flex flex-col items-center lg:items-end"
+            >
+              {/* Logo */}
+              <img
+                src="/images/dlogo1.png"
+                alt="DineFlexx"
+                className="w-56 sm:w-72 lg:w-80 xl:w-96 h-auto object-contain drop-shadow-2xl mb-6"
+              />
+              
+              {/* Badge Movido Aquí - DEBAJO del logo */}
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  rotate: [0, -1, 1, 0]
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-2xl p-5 border-4 border-white dark:border-gray-800"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                    <Check className="w-8 h-8 text-white" strokeWidth={3} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-green-100 font-bold uppercase tracking-wide">
+                      ✓ Aprobado
+                    </p>
+                    <p className="text-3xl font-black text-white">
+                      $1,500
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="py-16 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-black text-gray-900 dark:text-white mb-3">
+              Cómo funciona
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              Tres pasos simples para tu primera orden
+            </p>
           </div>
 
-          <Link
-            to="/registro-restaurante"
-            className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-all hover:shadow-xl"
-          >
-            Regístrate gratis como restaurante
-          </Link>
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {[
+              {
+                step: "1",
+                icon: CreditCard,
+                title: "Regístrate en 30 segundos",
+                desc: "Aprobación instantánea hasta $1,500. Sin credit check ni papeleo.",
+                color: "blue"
+              },
+              {
+                step: "2",
+                icon: Zap,
+                title: "Ordena y paga el 25% hoy",
+                desc: "Escoge tu restaurante favorito. Solo pagas la primera cuota hoy.",
+                color: "purple"
+              },
+              {
+                step: "3",
+                icon: Gift,
+                title: "Gana puntos automáticamente",
+                desc: "1 punto por cada $2. Redime en descuentos o delivery gratis.",
+                color: "green"
+              }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="relative bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-7 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-xl transition-all group"
+              >
+                <div className={`absolute -top-4 -left-4 w-11 h-11 bg-gradient-to-br from-${item.color}-500 to-${item.color}-600 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg`}>
+                  {item.step}
+                </div>
+                <div className={`w-14 h-14 bg-${item.color}-100 dark:bg-${item.color}-900/30 rounded-xl flex items-center justify-center mb-4 mt-3 group-hover:scale-110 transition-transform`}>
+                  <item.icon className={`w-7 h-7 text-${item.color}-600`} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  {item.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {item.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </section>
+
+      {/* FEATURES GRID */}
+      <section className="py-16 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-black text-gray-900 dark:text-white mb-3">
+              Por qué elegir DineFlexx
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              Tecnología que mejora tu experiencia gastronómica
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {[
+              {
+                title: "IA que recomienda",
+                desc: "Sugerencias personalizadas basadas en tu historial, preferencias y restricciones alimenticias",
+                img: "/images/menu.jpg",
+                badge: "🤖 Smart AI"
+              },
+              {
+                title: "Paga en 4 cuotas sin interés",
+                desc: "Divide tu cuenta automáticamente. Cero fees ocultos, cero sorpresas",
+                img: "/images/pago.jpg",
+                badge: "💳 0% Interés"
+              },
+              {
+                title: "Rewards que funcionan",
+                desc: "Gana 1 punto por cada $2. Canjea en cualquier restaurante de la red",
+                img: "/images/puntos.jpg",
+                badge: "🎁 Cashback"
+              }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="group bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all"
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={item.img}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute top-4 right-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                    {item.badge}
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="py-16 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-black text-gray-900 dark:text-white mb-3">
+              Lo que dicen nuestros usuarios
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              +2,500 comensales satisfechos en Puerto Rico
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                quote: "Fui a un restaurante premium pagando solo $20 hoy. El resto en 3 cuotas. Esto cambió mi vida social completamente.",
+                author: "Carlos M.",
+                role: "San Juan, PR",
+                rating: 5
+              },
+              {
+                quote: "La IA me recomendó un plato vegano que nunca hubiera pedido. Ahora es mi favorito del menú. Impresionante.",
+                author: "Laura G.",
+                role: "Ponce, PR",
+                rating: 5
+              },
+              {
+                quote: "Ya acumulé 800 puntos y los canjeé por delivery gratis. El sistema de rewards realmente funciona.",
+                author: "Felix R.",
+                role: "Bayamón, PR",
+                rating: 5
+              }
+            ].map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-6 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-xl transition-all"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${
+                    i === 0 ? "from-blue-500 to-blue-600" :
+                    i === 1 ? "from-purple-500 to-purple-600" :
+                    "from-green-500 to-green-600"
+                  } shadow-lg`} />
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900 dark:text-white">{t.author}</p>
+                    <p className="text-sm text-gray-500">{t.role}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    {[...Array(t.rating)].map((_, i) => (
+                      <span key={i} className="text-yellow-400 text-lg">★</span>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  "{t.quote}"
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* RESTAURANT CTA */}
+      <section className="py-20 bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-300 rounded-full blur-3xl" />
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl lg:text-5xl font-black mb-5">
+              ¿Tienes un restaurante?
+            </h2>
+            <p className="text-xl lg:text-2xl mb-10 opacity-95 leading-relaxed">
+              Únete a DineFlexx y aumenta tus ventas con nuestro sistema de pagos flexible
+            </p>
+            
+            <div className="grid sm:grid-cols-2 gap-4 text-left max-w-2xl mx-auto mb-10">
+              {[
+                "✅ Registro 100% gratuito",
+                "📊 Dashboard de analíticas",
+                "💳 Pagos garantizados",
+                "🛡️ Zero riesgo de fraude"
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3 text-lg font-medium">
+                  <span className="text-2xl">{item.split(' ')[0]}</span>
+                  <span>{item.split(' ').slice(1).join(' ')}</span>
+                </div>
+              ))}
+            </div>
+
+            <Link
+              to="/registro-restaurante"
+              className="inline-flex items-center gap-3 bg-white text-purple-600 font-black px-10 py-5 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all text-lg"
+            >
+              Regístrate como restaurante
+              <ArrowRight className="w-6 h-6" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="py-20 bg-white dark:bg-gray-900">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl lg:text-5xl font-black text-gray-900 dark:text-white mb-5">
+              Empieza tu primera orden hoy
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-10">
+              Aprobación instantánea • Sin papeleo • Sin credit check
+            </p>
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white font-black px-12 py-5 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all text-lg"
+            >
+              Crear cuenta gratis
+              <ArrowRight className="w-6 h-6" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+    </div>
   );
 }
