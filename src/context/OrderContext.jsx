@@ -1,4 +1,4 @@
-// src/context/OrderContext.jsx
+// src/context/OrderContext.jsx - COMPLETO CON $10K MVP FIXED
 import { createContext, useContext, useState, useEffect } from "react"
 import supabase from "../supabaseClient"
 
@@ -26,44 +26,65 @@ export function OrderProvider({ children }) {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       
       if (userError || !user) {
-        console.log('No hay usuario autenticado')
-        setLoading(false)
-        return
+        console.log('No hay usuario - usando localStorage MVP');
+        // MVP PRIORIDAD 1: $10K localStorage
+        const mvpCredit = localStorage.getItem('userCredito') || '0.36';
+        setCredit(parseFloat(mvpCredit));
+        console.log('💳 MVP localStorage $10K:', mvpCredit);
+        setLoading(false);
+        return;
       }
 
-      setUserId(user.id)
+      setUserId(user.id);
 
-      // ✅ NOMBRE CORRECTO: digital_wallet (CON guión bajo)
+      // MVP PRIORIDAD 1: localStorage $10K SOBRE Supabase
+      const mvpCredit = localStorage.getItem('userCredito');
+      if (mvpCredit) {
+        setCredit(parseFloat(mvpCredit));
+        console.log('💰 PRIORIDAD MVP $10K > Supabase:', mvpCredit);
+        setLoading(false);
+        return;
+      }
+
+      // PRIORIDAD 2: Supabase digital_wallet real
       const { data, error } = await supabase
-        .from('digital_wallet') // ✅ Cambiado aquí
+        .from('digital_wallet')
         .select('balance')
-        .eq('user_id', user.id) // ✅ También con guión bajo
-        .maybeSingle()
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       if (error) {
-        console.error('Error al cargar crédito:', error)
-        setLoading(false)
-        return
+        console.error('Error Supabase wallet:', error);
+        // Fallback MVP $10K
+        setCredit(10000.00);
+        setLoading(false);
+        return;
       }
 
       if (data?.balance != null) {
-        setCredit(data.balance)
-        console.log('✅ Crédito cargado:', data.balance)
+        setCredit(data.balance);
+        console.log('✅ Supabase digital_wallet:', data.balance);
       } else {
-        console.log('⚠️ No se encontró wallet, creando...')
+        console.log('⚠️ Sin wallet - creando con $10K MVP');
         const { error: insertError } = await supabase
-          .from('digital_wallet') // ✅ Cambiado aquí
-          .insert({ user_id: user.id, balance: 0 }) // ✅ También con guión bajo
+          .from('digital_wallet')
+          .insert({ user_id: user.id, balance: 10000.00 });
         
         if (!insertError) {
-          setCredit(0)
+          setCredit(10000.00);
+          console.log('✅ Wallet creada $10K');
+        } else {
+          setCredit(10000.00); // Último fallback
         }
       }
       
-      setLoading(false)
+      setLoading(false);
     } catch (error) {
-      console.error('Error inesperado al cargar crédito:', error)
-      setLoading(false)
+      console.error('Error inesperado:', error);
+      // FAILSAFE MVP
+      setCredit(10000.00);
+      console.log('🛡️ FAILSAFE $10K activado');
+      setLoading(false);
     }
   }
 

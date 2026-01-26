@@ -1,9 +1,10 @@
 // src/paginas/Wallet.jsx
-import { useState, useEffect } from "react"
-import { useOrder } from "../context/OrderContext"
-import supabase from "../supabaseClient"
-import toast, { Toaster } from "react-hot-toast"
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react";
+import { useOrder } from "../context/OrderContext";
+import supabase from "../supabaseClient";
+import { useCredit } from '../hooks/useCredit';
+import toast, { Toaster } from "react-hot-toast";
+import { motion } from "framer-motion";
 import {
   Wallet as WalletIcon,
   TrendingUp,
@@ -20,93 +21,94 @@ import {
   Share2,
   CheckCircle,
   XCircle,
-} from "lucide-react"
-import QRCode from "qrcode"
-import { crearNotificacion } from '../utils/notifications'
+} from "lucide-react";
+import QRCode from "qrcode";
+import { crearNotificacion } from '../utils/notifications';
 
 const tarjetas = [
   { id: 1, tipo: "Débito", banco: "Banco Nacional", numero: "**** 1234" },
   { id: 2, tipo: "Cuenta de Cheques", banco: "Interbank", numero: "**** 5678" },
   { id: 3, tipo: "ATH Móvil", banco: "ATH PR", numero: "ath@cliente" }
-]
+];
 
 export default function Wallet() {
   const { 
     orden, 
     total: initialTotal, 
-    credit: initialCredit, 
     puntos, 
     referido, 
     puntosReferido 
-  } = useOrder()
+  } = useOrder();
+
+  // Hook de crédito (fuente principal de crédito disponible)
+  const { credit: availableCredit } = useCredit();
 
   // Tab state
-  const [activeTab, setActiveTab] = useState("pagar")
+  const [activeTab, setActiveTab] = useState("pagar");
 
-  // Estado original "Pagar Orden"
-  const [total, setTotal] = useState(initialTotal)
-  const [credit, setCredit] = useState(initialCredit)
-  const [tipoPago, setTipoPago] = useState("mensual")
-  const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(null)
-  const [autorizado, setAutorizado] = useState(false)
-  const [confirmarAutorizado, setConfirmarAutorizado] = useState(false)
-  const [walletGenerada, setWalletGenerada] = useState(false)
-  const [ordenExitosa, setOrdenExitosa] = useState(false)
-  const [propina, setPropina] = useState(0.18)
-  const [nombreAutorizado, setNombreAutorizado] = useState("")
-  const [userId, setUserId] = useState(null)
-  const [autorizaciones, setAutorizaciones] = useState([])
+  // Estados para "Pagar Orden"
+  const [total, setTotal] = useState(initialTotal);
+  const [tipoPago, setTipoPago] = useState("mensual");
+  const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(null);
+  const [autorizado, setAutorizado] = useState(false);
+  const [confirmarAutorizado, setConfirmarAutorizado] = useState(false);
+  const [walletGenerada, setWalletGenerada] = useState(false);
+  const [ordenExitosa, setOrdenExitosa] = useState(false);
+  const [propina, setPropina] = useState(0.18);
+  const [nombreAutorizado, setNombreAutorizado] = useState("");
+  const [userId, setUserId] = useState(null);
+  const [autorizaciones, setAutorizaciones] = useState([]);
 
-  // Estado nuevo "Historial"
-  const [wallet, setWallet] = useState({ balance: 0 })
-  const [transactions, setTransactions] = useState([])
-  const [upcomingPayments, setUpcomingPayments] = useState([])
-  const [paymentMethods, setPaymentMethods] = useState([])
-  const [loading, setLoading] = useState(true)
+  // Estados para "Historial" y otras secciones
+  const [wallet, setWallet] = useState({ balance: 0 });
+  const [transactions, setTransactions] = useState([]);
+  const [upcomingPayments, setUpcomingPayments] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [virtualCards, setVirtualCards] = useState([]);
+  const [sharedCredits, setSharedCredits] = useState([]);
 
-  // Estado para tarjetas virtuales
-  const [virtualCards, setVirtualCards] = useState([])
-  const [showCreateCardModal, setShowCreateCardModal] = useState(false)
-  const [newCardAmount, setNewCardAmount] = useState(100)
-  const [newCardName, setNewCardName] = useState("")
-  const [creatingCard, setCreatingCard] = useState(false)
+  // Modales
+  const [showCreateCardModal, setShowCreateCardModal] = useState(false);
+  const [newCardAmount, setNewCardAmount] = useState(100);
+  const [newCardName, setNewCardName] = useState("");
+  const [creatingCard, setCreatingCard] = useState(false);
 
-  // Estado para compartir crédito QR
-  const [sharedCredits, setSharedCredits] = useState([])
-  const [showCreateQRModal, setShowCreateQRModal] = useState(false)
-  const [qrAmount, setQrAmount] = useState(50)
-  const [qrAssignedTo, setQrAssignedTo] = useState("")
-  const [qrExpiration, setQrExpiration] = useState(7)
-  const [creatingQR, setCreatingQR] = useState(false)
-  const [generatedQR, setGeneratedQR] = useState(null)
+  const [showCreateQRModal, setShowCreateQRModal] = useState(false);
+  const [qrAmount, setQrAmount] = useState(50);
+  const [qrAssignedTo, setQrAssignedTo] = useState("");
+  const [qrExpiration, setQrExpiration] = useState(7);
+  const [creatingQR, setCreatingQR] = useState(false);
+  const [generatedQR, setGeneratedQR] = useState(null);
 
+  const [loading, setLoading] = useState(true);
+
+  // Sincronizar total inicial
   useEffect(() => {
-    setTotal(initialTotal)
-    setCredit(initialCredit)
-  }, [initialTotal, initialCredit])
+    setTotal(initialTotal);
+  }, [initialTotal]);
 
+  // Cargar datos del usuario y wallet
   useEffect(() => {
     const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser()
+      const { data } = await supabase.auth.getUser();
       if (data?.user) {
-        setUserId(data.user.id)
-        fetchAutorizaciones(data.user.id)
-        loadWalletData(data.user.id)
+        setUserId(data.user.id);
+        fetchAutorizaciones(data.user.id);
+        loadWalletData(data.user.id);
       }
-    }
-    fetchUser()
-  }, [])
+    };
+    fetchUser();
+  }, []);
 
   const fetchAutorizaciones = async (uid) => {
     const { data } = await supabase
       .from("autorizados")
       .select("nombre, monto, created_at")
       .eq("user_id", uid)
-      .order("created_at", { ascending: false })
-    if (data) setAutorizaciones(data)
-  }
+      .order("created_at", { ascending: false });
+    if (data) setAutorizaciones(data);
+  };
 
-  // Cargar datos del wallet
   const loadWalletData = async (uid) => {
     await Promise.all([
       loadWallet(uid),
@@ -115,18 +117,18 @@ export default function Wallet() {
       loadPaymentMethods(uid),
       loadVirtualCards(uid),
       loadSharedCredits(uid),
-    ])
-    setLoading(false)
-  }
+    ]);
+    setLoading(false);
+  };
 
   const loadWallet = async (uid) => {
     const { data } = await supabase
       .from("digital_wallet")
       .select("balance")
       .eq("user_id", uid)
-      .maybeSingle()
-    if (data) setWallet({ balance: data.balance })
-  }
+      .maybeSingle();
+    if (data) setWallet({ balance: data.balance });
+  };
 
   const loadTransactions = async (uid) => {
     const { data } = await supabase
@@ -134,9 +136,9 @@ export default function Wallet() {
       .select("*")
       .eq("user_id", uid)
       .order("created_at", { ascending: false })
-      .limit(10)
-    setTransactions(data || [])
-  }
+      .limit(10);
+    setTransactions(data || []);
+  };
 
   const loadUpcomingPayments = async (uid) => {
     const { data } = await supabase
@@ -145,18 +147,18 @@ export default function Wallet() {
       .eq("status", "pending")
       .gte("due_date", new Date().toISOString().split("T")[0])
       .order("due_date", { ascending: true })
-      .limit(5)
-    setUpcomingPayments(data || [])
-  }
+      .limit(5);
+    setUpcomingPayments(data || []);
+  };
 
   const loadPaymentMethods = async (uid) => {
     const { data } = await supabase
       .from("payment_methods")
       .select("*")
       .eq("user_id", uid)
-      .order("is_default", { ascending: false })
-    setPaymentMethods(data || [])
-  }
+      .order("is_default", { ascending: false });
+    setPaymentMethods(data || []);
+  };
 
   const loadVirtualCards = async (uid) => {
     const { data } = await supabase
@@ -164,99 +166,100 @@ export default function Wallet() {
       .select("*")
       .eq("user_id", uid)
       .eq("status", "active")
-      .order("created_at", { ascending: false })
-    setVirtualCards(data || [])
-  }
+      .order("created_at", { ascending: false });
+    setVirtualCards(data || []);
+  };
 
   const loadSharedCredits = async (uid) => {
     const { data } = await supabase
       .from("shared_credits")
       .select("*")
       .eq("user_id", uid)
-      .order("created_at", { ascending: false })
-    setSharedCredits(data || [])
-  }
+      .order("created_at", { ascending: false });
+    setSharedCredits(data || []);
+  };
 
-  // 👇 FUNCIÓN CORREGIDA
+  // Función para pagar cuota (actualiza wallet y refleja en crédito)
   const pagarCuota = async (payment) => {
     if (wallet.balance < payment.amount) {
-      toast.error('Balance insuficiente para pagar esta cuota')
-      return
+      toast.error('Balance insuficiente para pagar esta cuota');
+      return;
     }
 
-    const toastId = toast.loading('Procesando pago...')
+    const toastId = toast.loading('Procesando pago...');
 
     try {
-      // 1. Marcar installment como pagado
+      // 1. Marcar cuota como pagada
       const { error: installmentError } = await supabase
         .from('installments')
         .update({ status: 'paid', paid_at: new Date().toISOString() })
-        .eq('id', payment.id)
+        .eq('id', payment.id);
 
-      if (installmentError) throw installmentError
+      if (installmentError) throw installmentError;
 
-      // 2. Actualizar balance
-      const newBalance = wallet.balance - payment.amount
+      // 2. Actualizar balance del wallet
+      const newBalance = wallet.balance - payment.amount;
 
       const { error: walletError } = await supabase
         .from('digital_wallet')
         .update({ balance: newBalance })
-        .eq('user_id', userId)
+        .eq('user_id', userId);
 
-      if (walletError) throw walletError
+      if (walletError) throw walletError;
 
       // 3. Buscar order_id del plan
       const { data: planData } = await supabase
         .from('financing_plans')
         .select('order_id')
         .eq('id', payment.plan_id)
-        .single()
+        .single();
 
-      // 4. Crear transacción ✅ CORREGIDO
+      // 4. Crear transacción
       const { error: txError } = await supabase
         .from('transactions')
         .insert({
           user_id: userId,
-          type: 'payment',  // ✅ CORRECTO (sin "_received")
+          type: 'payment',
           amount: payment.amount,
           description: `Cuota ${payment.sequence} pagada`,
           status: 'completed',
           order_id: planData?.order_id || null
-        })
+        });
 
-      if (txError) throw txError
+      if (txError) throw txError;
 
-      setWallet({ balance: newBalance })
-      setUpcomingPayments(prev => prev.filter(p => p.id !== payment.id))
-      setCredit(newBalance)
-      await loadTransactions(userId)
-      toast.success('Cuota pagada exitosamente!', { id: toastId })
+      // Actualizar estados locales
+      setWallet({ balance: newBalance });
+      setUpcomingPayments(prev => prev.filter(p => p.id !== payment.id));
+      await loadTransactions(userId);
+      toast.success('Cuota pagada exitosamente!', { id: toastId });
 
     } catch (error) {
-      console.error('Error al pagar cuota:', error)
-      toast.error('Error al procesar el pago', { id: toastId })
+      console.error('Error al pagar cuota:', error);
+      toast.error('Error al procesar el pago', { id: toastId });
     }
-  }
+  };
 
+  // Crear tarjeta virtual
   const crearTarjetaVirtual = async () => {
     if (newCardAmount <= 0) {
-      toast.error("El monto debe ser mayor a 0")
-      return
+      toast.error("El monto debe ser mayor a 0");
+      return;
     }
     if (newCardAmount > wallet.balance) {
-      toast.error("Monto supera el balance disponible")
-      return
+      toast.error("Monto supera el balance disponible");
+      return;
     }
 
-    setCreatingCard(true)
-    const toastId = toast.loading("Creando tarjeta virtual...")
+    setCreatingCard(true);
+    const toastId = toast.loading("Creando tarjeta virtual...");
 
     try {
-      const cardNumber = Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join("")
-      const cvv = Array.from({ length: 3 }, () => Math.floor(Math.random() * 10)).join("")
-      const expDate = new Date()
-      expDate.setFullYear(expDate.getFullYear() + 2)
-      const expirationDate = `${(expDate.getMonth() + 1).toString().padStart(2, "0")}/${expDate.getFullYear().toString().slice(-2)}`
+      const cardNumber = Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join("");
+      const cvv = Array.from({ length: 3 }, () => Math.floor(Math.random() * 10)).join("");
+      const expDate = new Date();
+      expDate.setFullYear(expDate.getFullYear() + 2);
+      const expirationDate = `${(expDate.getMonth() + 1).toString().padStart(2, "0")}/${expDate.getFullYear().toString().slice(-2)}`;
 
       const { data, error } = await supabase
         .from("virtual_cards")
@@ -271,18 +274,18 @@ export default function Wallet() {
           assigned_to: newCardName || null
         })
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
-      const newBalance = wallet.balance - newCardAmount
+      const newBalance = wallet.balance - newCardAmount;
 
       const { error: walletError } = await supabase
         .from("digital_wallet")
         .update({ balance: newBalance })
-        .eq("user_id", userId)
+        .eq("user_id", userId);
 
-      if (walletError) throw walletError
+      if (walletError) throw walletError;
 
       await supabase
         .from("transactions")
@@ -292,42 +295,42 @@ export default function Wallet() {
           amount: newCardAmount,
           description: `Tarjeta virtual creada${newCardName ? ` para ${newCardName}` : ''}`,
           status: 'completed'
-        })
+        });
 
-      setWallet({ balance: newBalance })
-      setCredit(newBalance)
-      await loadVirtualCards(userId)
-      await loadTransactions(userId)
-      setShowCreateCardModal(false)
-      setNewCardAmount(100)
-      setNewCardName("")
-      toast.success("Tarjeta virtual creada exitosamente!", { id: toastId })
+      setWallet({ balance: newBalance });
+      await loadVirtualCards(userId);
+      await loadTransactions(userId);
+      setShowCreateCardModal(false);
+      setNewCardAmount(100);
+      setNewCardName("");
+      toast.success("Tarjeta virtual creada exitosamente!", { id: toastId });
 
     } catch (error) {
-      console.error("Error creando tarjeta:", error)
-      toast.error("Error al crear tarjeta virtual", { id: toastId })
+      console.error("Error creando tarjeta:", error);
+      toast.error("Error al crear tarjeta virtual", { id: toastId });
     } finally {
-      setCreatingCard(false)
+      setCreatingCard(false);
     }
-  }
+  };
 
+  // Crear QR para compartir crédito
   const crearQRCredito = async () => {
     if (qrAmount <= 0) {
-      toast.error("El monto debe ser mayor a 0")
-      return
+      toast.error("El monto debe ser mayor a 0");
+      return;
     }
     if (qrAmount > wallet.balance) {
-      toast.error("Monto supera el balance disponible")
-      return
+      toast.error("Monto supera el balance disponible");
+      return;
     }
 
-    setCreatingQR(true)
-    const toastId = toast.loading("Generando QR...")
+    setCreatingQR(true);
+    const toastId = toast.loading("Generando QR...");
 
     try {
-      const code = `QR-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
-      const expirationDate = new Date()
-      expirationDate.setDate(expirationDate.getDate() + qrExpiration)
+      const code = `QR-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + qrExpiration);
 
       const { data, error } = await supabase
         .from("shared_credits")
@@ -340,18 +343,18 @@ export default function Wallet() {
           status: "active"
         })
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
-      const newBalance = wallet.balance - qrAmount
+      const newBalance = wallet.balance - qrAmount;
 
       const { error: walletError } = await supabase
         .from("digital_wallet")
         .update({ balance: newBalance })
-        .eq("user_id", userId)
+        .eq("user_id", userId);
 
-      if (walletError) throw walletError
+      if (walletError) throw walletError;
 
       await supabase
         .from("transactions")
@@ -361,121 +364,114 @@ export default function Wallet() {
           amount: qrAmount,
           description: `Crédito compartido${qrAssignedTo ? ` para ${qrAssignedTo}` : ''}`,
           status: 'completed'
-        })
+        });
 
       const qrDataURL = await QRCode.toDataURL(code, {
         width: 300,
         margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      })
+        color: { dark: '#000000', light: '#FFFFFF' }
+      });
 
-      setWallet({ balance: newBalance })
-      setCredit(newBalance)
-      await loadSharedCredits(userId)
-      await loadTransactions(userId)
-      setGeneratedQR({ ...data, qrImage: qrDataURL })
-      setQrAmount(50)
-      setQrAssignedTo("")
-      setQrExpiration(7)
-      toast.success("QR generado exitosamente!", { id: toastId })
+      setWallet({ balance: newBalance });
+      await loadSharedCredits(userId);
+      await loadTransactions(userId);
+      setGeneratedQR({ ...data, qrImage: qrDataURL });
+      setQrAmount(50);
+      setQrAssignedTo("");
+      setQrExpiration(7);
+      toast.success("QR generado exitosamente!", { id: toastId });
 
     } catch (error) {
-      console.error("Error creando QR:", error)
-      toast.error("Error al generar QR", { id: toastId })
+      console.error("Error creando QR:", error);
+      toast.error("Error al generar QR", { id: toastId });
     } finally {
-      setCreatingQR(false)
+      setCreatingQR(false);
     }
-  }
+  };
 
+  // Funciones auxiliares
   const copiarAlPortapapeles = (texto, tipo) => {
-    navigator.clipboard.writeText(texto)
-    toast.success(`${tipo} copiado al portapapeles`)
-  }
+    navigator.clipboard.writeText(texto);
+    toast.success(`${tipo} copiado al portapapeles`);
+  };
 
   const compartirQR = async (qr) => {
     try {
       const qrDataURL = await QRCode.toDataURL(qr.code, {
         width: 600,
         margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      })
+        color: { dark: '#000000', light: '#FFFFFF' }
+      });
 
-      const blob = await (await fetch(qrDataURL)).blob()
-      const file = new File([blob], `dineflexx-qr-${qr.code}.png`, { type: 'image/png' })
+      const blob = await (await fetch(qrDataURL)).blob();
+      const file = new File([blob], `dineflexx-qr-${qr.code}.png`, { type: 'image/png' });
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: 'DineFlexx - Crédito Compartido',
           text: `Te comparto ${formatCurrency(qr.amount)} en crédito DineFlexx`,
           files: [file]
-        })
-        toast.success('QR compartido exitosamente')
+        });
+        toast.success('QR compartido exitosamente');
       } else {
-        const link = document.createElement('a')
-        link.href = qrDataURL
-        link.download = `dineflexx-qr-${qr.code}.png`
-        link.click()
-        toast.success('QR descargado. Compártelo manualmente')
+        const link = document.createElement('a');
+        link.href = qrDataURL;
+        link.download = `dineflexx-qr-${qr.code}.png`;
+        link.click();
+        toast.success('QR descargado. Compártelo manualmente');
       }
     } catch (error) {
-      console.error("Error compartiendo QR:", error)
-      copiarAlPortapapeles(qr.code, 'Código QR')
+      console.error("Error compartiendo QR:", error);
+      copiarAlPortapapeles(qr.code, 'Código QR');
     }
-  }
+  };
 
   const cancelarQR = async (qrId) => {
-    const toastId = toast.loading("Cancelando QR...")
+    const toastId = toast.loading("Cancelando QR...");
 
     try {
-      const qr = sharedCredits.find(q => q.id === qrId)
+      const qr = sharedCredits.find(q => q.id === qrId);
 
       const { error } = await supabase
         .from("shared_credits")
         .update({ status: "cancelled" })
-        .eq("id", qrId)
+        .eq("id", qrId);
 
-      if (error) throw error
+      if (error) throw error;
 
-      const newBalance = wallet.balance + qr.amount
+      const newBalance = wallet.balance + qr.amount;
 
       await supabase
         .from("digital_wallet")
         .update({ balance: newBalance })
-        .eq("user_id", userId)
+        .eq("user_id", userId);
 
-      setWallet({ balance: newBalance })
-      setCredit(newBalance)
-      await loadSharedCredits(userId)
-      toast.success("QR cancelado y crédito devuelto", { id: toastId })
+      setWallet({ balance: newBalance });
+      await loadSharedCredits(userId);
+      toast.success("QR cancelado y crédito devuelto", { id: toastId });
 
     } catch (error) {
-      console.error("Error cancelando QR:", error)
-      toast.error("Error al cancelar QR", { id: toastId })
+      console.error("Error cancelando QR:", error);
+      toast.error("Error al cancelar QR", { id: toastId });
     }
-  }
+  };
 
   const usarQREnRestaurante = async (qrId) => {
-    const toastId = toast.loading("Procesando QR...")
+    const toastId = toast.loading("Procesando QR...");
 
     try {
-      const qr = sharedCredits.find(q => q.id === qrId)
+      const qr = sharedCredits.find(q => q.id === qrId);
       if (!qr) {
-        toast.error("QR no encontrado", { id: toastId })
-        return
+        toast.error("QR no encontrado", { id: toastId });
+        return;
       }
 
       const { error: updateError } = await supabase
         .from("shared_credits")
         .update({ status: "used", used_at: new Date().toISOString() })
-        .eq("id", qrId)
+        .eq("id", qrId);
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
       await crearNotificacion({
         userId: qr.user_id,
@@ -483,96 +479,96 @@ export default function Wallet() {
         title: '✅ QR Usado',
         message: `Tu QR de ${formatCurrency(qr.amount)} fue usado exitosamente`,
         relatedId: qrId
-      })
+      });
 
-      await loadSharedCredits(userId)
-      toast.success("QR usado correctamente", { id: toastId })
+      await loadSharedCredits(userId);
+      toast.success("QR usado correctamente", { id: toastId });
 
     } catch (error) {
-      console.error("Error usando QR:", error)
-      toast.error("Error al procesar QR", { id: toastId })
+      console.error("Error usando QR:", error);
+      toast.error("Error al procesar QR", { id: toastId });
     }
-  }
+  };
 
-  const fee = total * 0.2
-  const propinaTotal = total * propina
-  const totalConFee = total + fee + propinaTotal
-  const puntosGenerados = Math.floor(total / 2)
+  // Cálculos de pago
+  const fee = total * 0.2;
+  const propinaTotal = total * propina;
+  const totalConFee = total + fee + propinaTotal;
+  const puntosGenerados = Math.floor(total / 2);
 
   const cuotas = tipoPago === "mensual"
     ? Array.from({ length: 6 }, () => totalConFee / 6)
-    : Array.from({ length: 8 }, () => totalConFee / 8)
+    : Array.from({ length: 8 }, () => totalConFee / 8);
 
   const pagarOrden = () => {
-    setCredit(prev => prev - totalConFee)
-    setOrdenExitosa(true)
-    toast.success("Orden pagada correctamente")
-  }
+    toast.success("Orden pagada correctamente");
+    setOrdenExitosa(true);
+  };
 
   const generarWalletDigital = () => {
-    setWalletGenerada(true)
-    setOrdenExitosa(true)
-    toast.success("Tarjeta digital agregada a Wallet")
-  }
+    setWalletGenerada(true);
+    setOrdenExitosa(true);
+    toast.success("Tarjeta digital agregada a Wallet");
+  };
 
   const confirmarAutorizacion = async () => {
-    setConfirmarAutorizado(false)
-    if (!userId || !nombreAutorizado || totalConFee <= 0) return
+    setConfirmarAutorizado(false);
+    if (!userId || !nombreAutorizado || totalConFee <= 0) return;
 
     const { error } = await supabase.from("autorizados").insert({
       user_id: userId,
       nombre: nombreAutorizado,
       monto: totalConFee
-    })
+    });
 
     if (!error) {
-      toast.success(`Crédito autorizado a ${nombreAutorizado}`)
-      fetchAutorizaciones(userId)
+      toast.success(`Crédito autorizado a ${nombreAutorizado}`);
+      fetchAutorizaciones(userId);
     } else {
-      toast.error("Error al autorizar crédito")
+      toast.error("Error al autorizar crédito");
     }
-  }
+  };
 
   const formatCurrency = (v) =>
-    new Intl.NumberFormat("es-PR", { style: "currency", currency: "USD" }).format(v)
+    new Intl.NumberFormat("es-PR", { style: "currency", currency: "USD" }).format(v);
 
   const getTransactionIcon = (type) => {
     switch (type) {
-      case "purchase": return <TrendingDown className="text-red-500" size={20} />
-      case "payment": return <TrendingDown className="text-orange-500" size={20} />
+      case "purchase": return <TrendingDown className="text-red-500" size={20} />;
+      case "payment": return <TrendingDown className="text-orange-500" size={20} />;
       case "credit":
-      case "refund": return <TrendingUp className="text-green-500" size={20} />
-      default: return <DollarSign size={20} />
+      case "refund": return <TrendingUp className="text-green-500" size={20} />;
+      default: return <DollarSign size={20} />;
     }
-  }
+  };
 
   const getTransactionColor = (type) =>
-    ["credit", "refund"].includes(type) ? "text-green-600" : "text-red-600"
+    ["credit", "refund"].includes(type) ? "text-green-600" : "text-red-600";
 
   const getTransactionSign = (type) =>
-    ["credit", "refund"].includes(type) ? "+" : "-"
+    ["credit", "refund"].includes(type) ? "+" : "-";
 
-  const formatCardNumber = (number) => number.match(/.{1,4}/g).join(" ")
+  const formatCardNumber = (number) => number.match(/.{1,4}/g).join(" ");
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "active": return "bg-green-100 text-green-700"
-      case "used": return "bg-blue-100 text-blue-700"
-      case "expired": return "bg-gray-100 text-gray-700"
-      case "cancelled": return "bg-red-100 text-red-700"
-      default: return "bg-gray-100 text-gray-700"
+      case "active": return "bg-green-100 text-green-700";
+      case "used": return "bg-blue-100 text-blue-700";
+      case "expired": return "bg-gray-100 text-gray-700";
+      case "cancelled": return "bg-red-100 text-red-700";
+      default: return "bg-gray-100 text-gray-700";
     }
-  }
+  };
 
   const getStatusText = (status) => {
     switch (status) {
-      case "active": return "Activo"
-      case "used": return "Usado"
-      case "expired": return "Expirado"
-      case "cancelled": return "Cancelado"
-      default: return status
+      case "active": return "Activo";
+      case "used": return "Usado";
+      case "expired": return "Expirado";
+      case "cancelled": return "Cancelado";
+      default: return status;
     }
-  }
+  };
 
   return (
     <motion.div
@@ -599,7 +595,7 @@ export default function Wallet() {
               className="w-full mb-4 px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
             />
             <p className="text-sm mb-2">
-              Monto total autorizado: <strong>${totalConFee.toFixed(2)}</strong>
+              Monto total autorizado: <strong>{formatCurrency(totalConFee)}</strong>
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -895,11 +891,11 @@ export default function Wallet() {
           <div>
             <div className="bg-white dark:bg-gray-800 shadow p-6 rounded-2xl mb-6">
               <h2 className="text-xl font-semibold mb-2">Resumen de Pago</h2>
-              <p>Total de la orden: <span className="font-medium">${total.toFixed(2)}</span></p>
-              <p>Fee DineFlexx (20%): <span className="font-medium">${fee.toFixed(2)}</span></p>
-              <p>Propina ({(propina * 100).toFixed(0)}%): <span className="font-medium">${propinaTotal.toFixed(2)}</span></p>
-              <p>Total a pagar: <span className="font-bold text-blue-600">${totalConFee.toFixed(2)}</span></p>
-              <p>Crédito disponible: <span className="text-green-600 font-semibold">${credit.toFixed(2)}</span></p>
+              <p>Total de la orden: <span className="font-medium">{formatCurrency(total)}</span></p>
+              <p>Fee DineFlexx (20%): <span className="font-medium">{formatCurrency(fee)}</span></p>
+              <p>Propina ({(propina * 100).toFixed(0)}%): <span className="font-medium">{formatCurrency(propinaTotal)}</span></p>
+              <p>Total a pagar: <span className="font-bold text-blue-600">{formatCurrency(totalConFee)}</span></p>
+              <p>Crédito disponible: <span className="text-green-600 font-semibold">{formatCurrency(availableCredit)}</span></p>
               <p>Puntos por esta compra: <span className="text-purple-600 font-semibold">{puntosGenerados}</span></p>
             </div>
 
@@ -925,7 +921,7 @@ export default function Wallet() {
               </div>
               <ul className="text-sm list-disc list-inside">
                 {cuotas.map((c, i) => (
-                  <li key={i}>Cuota {i + 1}: ${c.toFixed(2)}</li>
+                  <li key={i}>Cuota {i + 1}: {formatCurrency(c)}</li>
                 ))}
               </ul>
             </div>
@@ -957,8 +953,8 @@ export default function Wallet() {
                   type="checkbox"
                   checked={autorizado}
                   onChange={() => {
-                    setAutorizado(!autorizado)
-                    if (!autorizado) setConfirmarAutorizado(true)
+                    setAutorizado(!autorizado);
+                    if (!autorizado) setConfirmarAutorizado(true);
                   }}
                 />
                 <span className="text-sm">Autorizo a otra persona a usar mi crédito disponible</span>
@@ -977,7 +973,7 @@ export default function Wallet() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <button
                 onClick={pagarOrden}
-                disabled={!tarjetaSeleccionada}
+                disabled={!tarjetaSeleccionada || totalConFee > availableCredit}
                 className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-2xl shadow disabled:opacity-50"
               >
                 Pagar Orden
@@ -991,7 +987,7 @@ export default function Wallet() {
             </div>
 
             <div className="mt-10 bg-white dark:bg-gray-800 shadow p-6 rounded-2xl">
-              <h2 className="text-lg font-semibold mb-4"> Historial de Autorizaciones</h2>
+              <h2 className="text-lg font-semibold mb-4">Historial de Autorizaciones</h2>
               {autorizaciones.length === 0 ? (
                 <p className="text-sm text-gray-500">No hay registros aún.</p>
               ) : (
@@ -999,7 +995,7 @@ export default function Wallet() {
                   {autorizaciones.map((a, i) => (
                     <li key={i} className="py-3 flex justify-between">
                       <span>{a.created_at.slice(0, 10)} - Autorizado a {a.nombre}</span>
-                      <span className="text-blue-600 font-medium">${a.monto.toFixed(2)}</span>
+                      <span className="text-blue-600 font-medium">{formatCurrency(a.monto)}</span>
                     </li>
                   ))}
                 </ul>
@@ -1175,7 +1171,7 @@ export default function Wallet() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs opacity-70">BALANCE</p>
-                      <p className="text-lg font-bold">{formatCurrency(card.remaining_amount)}</p>
+                      <p className="text-lg font-bold">{formatCurrency(card.credit_amount - card.used_amount)}</p>
                     </div>
                   </div>
 
@@ -1277,9 +1273,9 @@ export default function Wallet() {
                               navigator.share({
                                 title: 'DineFlexx - Crédito',
                                 text: `Código: ${qr.code} - ${formatCurrency(qr.amount)}`
-                              })
+                              });
                             } else {
-                              copiarAlPortapapeles(qr.code, 'Código')
+                              copiarAlPortapapeles(qr.code, 'Código');
                             }
                           }}
                           className="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"
@@ -1362,5 +1358,5 @@ export default function Wallet() {
         </section>
       )}
     </motion.div>
-  )
+  );
 }
