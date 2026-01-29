@@ -1,8 +1,8 @@
 // src/paginas/Wallet.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useOrder } from "../context/OrderContext";
 import supabase from "../supabaseClient";
-import { useCredit } from '../hooks/useCredit';
+import { useCredit } from "../hooks/useCredit";
 import toast, { Toaster } from "react-hot-toast";
 import { motion } from "framer-motion";
 import {
@@ -23,27 +23,21 @@ import {
   XCircle,
 } from "lucide-react";
 import QRCode from "qrcode";
-import { crearNotificacion } from '../utils/notifications';
+import { crearNotificacion } from "../utils/notifications";
 
 const tarjetas = [
   { id: 1, tipo: "Débito", banco: "Banco Nacional", numero: "**** 1234" },
   { id: 2, tipo: "Cuenta de Cheques", banco: "Interbank", numero: "**** 5678" },
-  { id: 3, tipo: "ATH Móvil", banco: "ATH PR", numero: "ath@cliente" }
+  { id: 3, tipo: "ATH Móvil", banco: "ATH PR", numero: "ath@cliente" },
 ];
 
 export default function Wallet() {
-  const { 
-    orden, 
-    total: initialTotal, 
-    puntos, 
-    referido, 
-    puntosReferido 
-  } = useOrder();
+  const { orden, total: initialTotal, referido, puntosReferido } = useOrder();
 
   // Hook de crédito (fuente principal de crédito disponible)
   const { credit: availableCredit } = useCredit();
 
-  // Tab state
+  // Tabs
   const [activeTab, setActiveTab] = useState("pagar");
 
   // Estados para "Pagar Orden"
@@ -52,8 +46,8 @@ export default function Wallet() {
   const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(null);
   const [autorizado, setAutorizado] = useState(false);
   const [confirmarAutorizado, setConfirmarAutorizado] = useState(false);
-  const [walletGenerada, setWalletGenerada] = useState(false);
-  const [ordenExitosa, setOrdenExitosa] = useState(false);
+  const [walletGenerada, setWalletGenerada] = useState(false); // se mantiene por tu flow
+  const [ordenExitosa, setOrdenExitosa] = useState(false); // se mantiene por tu flow
   const [propina, setPropina] = useState(0.18);
   const [nombreAutorizado, setNombreAutorizado] = useState("");
   const [userId, setUserId] = useState(null);
@@ -66,6 +60,9 @@ export default function Wallet() {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [virtualCards, setVirtualCards] = useState([]);
   const [sharedCredits, setSharedCredits] = useState([]);
+
+  // ✅ Filtro planes (Todos/Restaurante/Catering)
+  const [planFilter, setPlanFilter] = useState("all"); // all | restaurant | catering
 
   // Modales
   const [showCreateCardModal, setShowCreateCardModal] = useState(false);
@@ -83,9 +80,7 @@ export default function Wallet() {
   const [loading, setLoading] = useState(true);
 
   // Sincronizar total inicial
-  useEffect(() => {
-    setTotal(initialTotal);
-  }, [initialTotal]);
+  useEffect(() => setTotal(initialTotal), [initialTotal]);
 
   // Cargar datos del usuario y wallet
   useEffect(() => {
@@ -95,9 +90,12 @@ export default function Wallet() {
         setUserId(data.user.id);
         fetchAutorizaciones(data.user.id);
         loadWalletData(data.user.id);
+      } else {
+        setLoading(false);
       }
     };
     fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAutorizaciones = async (uid) => {
@@ -106,6 +104,7 @@ export default function Wallet() {
       .select("nombre, monto, created_at")
       .eq("user_id", uid)
       .order("created_at", { ascending: false });
+
     if (data) setAutorizaciones(data);
   };
 
@@ -113,7 +112,7 @@ export default function Wallet() {
     await Promise.all([
       loadWallet(uid),
       loadTransactions(uid),
-      loadUpcomingPayments(uid),
+      loadUpcomingPayments(uid), // ✅ ahora trae también source_type/title
       loadPaymentMethods(uid),
       loadVirtualCards(uid),
       loadSharedCredits(uid),
@@ -127,6 +126,7 @@ export default function Wallet() {
       .select("balance")
       .eq("user_id", uid)
       .maybeSingle();
+
     if (data) setWallet({ balance: data.balance });
   };
 
@@ -137,17 +137,43 @@ export default function Wallet() {
       .eq("user_id", uid)
       .order("created_at", { ascending: false })
       .limit(10);
+
     setTransactions(data || []);
   };
 
+  // ✅ IMPORTANTE: ahora unimos installments -> financing_plans
+  // para poder filtrar por source_type y mostrar title.
+  // Requiere FK: installments.plan_id -> financing_plans.id
   const loadUpcomingPayments = async (uid) => {
-    const { data } = await supabase
+    const today = new Date().toISOString().split("T")[0];
+
+    const { data, error } = await supabase
       .from("installments")
-      .select("*")
+      .select(
+        `
+        *,
+        financing_plans:plan_id (
+          id,
+          user_id,
+          source_type,
+          source_ref_id,
+          title,
+          order_id
+        )
+      `
+      )
       .eq("status", "pending")
-      .gte("due_date", new Date().toISOString().split("T")[0])
+      .gte("due_date", today)
+      .eq("financing_plans.user_id", uid)
       .order("due_date", { ascending: true })
-      .limit(5);
+      .limit(50);
+
+    if (error) {
+      console.error("❌ Error loadUpcomingPayments:", error);
+      setUpcomingPayments([]);
+      return;
+    }
+
     setUpcomingPayments(data || []);
   };
 
@@ -157,6 +183,7 @@ export default function Wallet() {
       .select("*")
       .eq("user_id", uid)
       .order("is_default", { ascending: false });
+
     setPaymentMethods(data || []);
   };
 
@@ -167,6 +194,7 @@ export default function Wallet() {
       .eq("user_id", uid)
       .eq("status", "active")
       .order("created_at", { ascending: false });
+
     setVirtualCards(data || []);
   };
 
@@ -176,24 +204,25 @@ export default function Wallet() {
       .select("*")
       .eq("user_id", uid)
       .order("created_at", { ascending: false });
+
     setSharedCredits(data || []);
   };
 
   // Función para pagar cuota (actualiza wallet y refleja en crédito)
   const pagarCuota = async (payment) => {
     if (wallet.balance < payment.amount) {
-      toast.error('Balance insuficiente para pagar esta cuota');
+      toast.error("Balance insuficiente para pagar esta cuota");
       return;
     }
 
-    const toastId = toast.loading('Procesando pago...');
+    const toastId = toast.loading("Procesando pago...");
 
     try {
       // 1. Marcar cuota como pagada
       const { error: installmentError } = await supabase
-        .from('installments')
-        .update({ status: 'paid', paid_at: new Date().toISOString() })
-        .eq('id', payment.id);
+        .from("installments")
+        .update({ status: "paid", paid_at: new Date().toISOString() })
+        .eq("id", payment.id);
 
       if (installmentError) throw installmentError;
 
@@ -201,42 +230,42 @@ export default function Wallet() {
       const newBalance = wallet.balance - payment.amount;
 
       const { error: walletError } = await supabase
-        .from('digital_wallet')
+        .from("digital_wallet")
         .update({ balance: newBalance })
-        .eq('user_id', userId);
+        .eq("user_id", userId);
 
       if (walletError) throw walletError;
 
-      // 3. Buscar order_id del plan
-      const { data: planData } = await supabase
-        .from('financing_plans')
-        .select('order_id')
-        .eq('id', payment.plan_id)
-        .single();
+      // 3. Buscar order_id del plan (por si quieres asociar transacción)
+      const { data: planData, error: planErr } = await supabase
+        .from("financing_plans")
+        .select("order_id")
+        .eq("id", payment.plan_id)
+        .maybeSingle();
+
+      if (planErr) console.warn("⚠️ No se pudo leer plan order_id:", planErr);
 
       // 4. Crear transacción
-      const { error: txError } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: userId,
-          type: 'payment',
-          amount: payment.amount,
-          description: `Cuota ${payment.sequence} pagada`,
-          status: 'completed',
-          order_id: planData?.order_id || null
-        });
+      const { error: txError } = await supabase.from("transactions").insert({
+        user_id: userId,
+        type: "payment",
+        amount: payment.amount,
+        description: `Cuota ${payment.sequence} pagada`,
+        status: "completed",
+        order_id: planData?.order_id || null,
+      });
 
       if (txError) throw txError;
 
       // Actualizar estados locales
       setWallet({ balance: newBalance });
-      setUpcomingPayments(prev => prev.filter(p => p.id !== payment.id));
+      setUpcomingPayments((prev) => prev.filter((p) => p.id !== payment.id));
       await loadTransactions(userId);
-      toast.success('Cuota pagada exitosamente!', { id: toastId });
 
+      toast.success("¡Cuota pagada exitosamente!", { id: toastId });
     } catch (error) {
-      console.error('Error al pagar cuota:', error);
-      toast.error('Error al procesar el pago', { id: toastId });
+      console.error("Error al pagar cuota:", error);
+      toast.error("Error al procesar el pago", { id: toastId });
     }
   };
 
@@ -255,23 +284,29 @@ export default function Wallet() {
     const toastId = toast.loading("Creando tarjeta virtual...");
 
     try {
-      const cardNumber = Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join("");
-      const cvv = Array.from({ length: 3 }, () => Math.floor(Math.random() * 10)).join("");
+      const cardNumber = Array.from({ length: 16 }, () =>
+        Math.floor(Math.random() * 10)
+      ).join("");
+      const cvv = Array.from({ length: 3 }, () =>
+        Math.floor(Math.random() * 10)
+      ).join("");
       const expDate = new Date();
       expDate.setFullYear(expDate.getFullYear() + 2);
-      const expirationDate = `${(expDate.getMonth() + 1).toString().padStart(2, "0")}/${expDate.getFullYear().toString().slice(-2)}`;
+      const expirationDate = `${(expDate.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}/${expDate.getFullYear().toString().slice(-2)}`;
 
       const { data, error } = await supabase
         .from("virtual_cards")
         .insert({
           user_id: userId,
           card_number: cardNumber,
-          cvv: cvv,
+          cvv,
           expiration_date: expirationDate,
           credit_amount: newCardAmount,
           used_amount: 0,
           status: "active",
-          assigned_to: newCardName || null
+          assigned_to: newCardName || null,
         })
         .select()
         .single();
@@ -287,24 +322,26 @@ export default function Wallet() {
 
       if (walletError) throw walletError;
 
-      await supabase
-        .from("transactions")
-        .insert({
-          user_id: userId,
-          type: 'purchase',
-          amount: newCardAmount,
-          description: `Tarjeta virtual creada${newCardName ? ` para ${newCardName}` : ''}`,
-          status: 'completed'
-        });
+      await supabase.from("transactions").insert({
+        user_id: userId,
+        type: "purchase",
+        amount: newCardAmount,
+        description: `Tarjeta virtual creada${newCardName ? ` para ${newCardName}` : ""}`,
+        status: "completed",
+      });
 
       setWallet({ balance: newBalance });
       await loadVirtualCards(userId);
       await loadTransactions(userId);
+
       setShowCreateCardModal(false);
       setNewCardAmount(100);
       setNewCardName("");
-      toast.success("Tarjeta virtual creada exitosamente!", { id: toastId });
 
+      toast.success("¡Tarjeta virtual creada exitosamente!", { id: toastId });
+
+      // por si quieres usarlo luego
+      console.log("✅ Tarjeta creada:", data?.id);
     } catch (error) {
       console.error("Error creando tarjeta:", error);
       toast.error("Error al crear tarjeta virtual", { id: toastId });
@@ -328,7 +365,10 @@ export default function Wallet() {
     const toastId = toast.loading("Generando QR...");
 
     try {
-      const code = `QR-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      const code = `QR-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)
+        .toUpperCase()}`;
       const expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() + qrExpiration);
 
@@ -336,11 +376,11 @@ export default function Wallet() {
         .from("shared_credits")
         .insert({
           user_id: userId,
-          code: code,
+          code,
           amount: qrAmount,
           assigned_to: qrAssignedTo || null,
           expiration_date: expirationDate.toISOString().split("T")[0],
-          status: "active"
+          status: "active",
         })
         .select()
         .single();
@@ -356,31 +396,30 @@ export default function Wallet() {
 
       if (walletError) throw walletError;
 
-      await supabase
-        .from("transactions")
-        .insert({
-          user_id: userId,
-          type: 'purchase',
-          amount: qrAmount,
-          description: `Crédito compartido${qrAssignedTo ? ` para ${qrAssignedTo}` : ''}`,
-          status: 'completed'
-        });
+      await supabase.from("transactions").insert({
+        user_id: userId,
+        type: "purchase",
+        amount: qrAmount,
+        description: `Crédito compartido${qrAssignedTo ? ` para ${qrAssignedTo}` : ""}`,
+        status: "completed",
+      });
 
       const qrDataURL = await QRCode.toDataURL(code, {
         width: 300,
         margin: 2,
-        color: { dark: '#000000', light: '#FFFFFF' }
+        color: { dark: "#000000", light: "#FFFFFF" },
       });
 
       setWallet({ balance: newBalance });
       await loadSharedCredits(userId);
       await loadTransactions(userId);
+
       setGeneratedQR({ ...data, qrImage: qrDataURL });
       setQrAmount(50);
       setQrAssignedTo("");
       setQrExpiration(7);
-      toast.success("QR generado exitosamente!", { id: toastId });
 
+      toast.success("¡QR generado exitosamente!", { id: toastId });
     } catch (error) {
       console.error("Error creando QR:", error);
       toast.error("Error al generar QR", { id: toastId });
@@ -400,29 +439,35 @@ export default function Wallet() {
       const qrDataURL = await QRCode.toDataURL(qr.code, {
         width: 600,
         margin: 2,
-        color: { dark: '#000000', light: '#FFFFFF' }
+        color: { dark: "#000000", light: "#FFFFFF" },
       });
 
       const blob = await (await fetch(qrDataURL)).blob();
-      const file = new File([blob], `dineflexx-qr-${qr.code}.png`, { type: 'image/png' });
+      const file = new File([blob], `dineflexx-qr-${qr.code}.png`, {
+        type: "image/png",
+      });
 
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] })
+      ) {
         await navigator.share({
-          title: 'DineFlexx - Crédito Compartido',
+          title: "DineFlexx - Crédito Compartido",
           text: `Te comparto ${formatCurrency(qr.amount)} en crédito DineFlexx`,
-          files: [file]
+          files: [file],
         });
-        toast.success('QR compartido exitosamente');
+        toast.success("QR compartido exitosamente");
       } else {
-        const link = document.createElement('a');
+        const link = document.createElement("a");
         link.href = qrDataURL;
         link.download = `dineflexx-qr-${qr.code}.png`;
         link.click();
-        toast.success('QR descargado. Compártelo manualmente');
+        toast.success("QR descargado. Compártelo manualmente");
       }
     } catch (error) {
       console.error("Error compartiendo QR:", error);
-      copiarAlPortapapeles(qr.code, 'Código QR');
+      copiarAlPortapapeles(qr.code, "Código QR");
     }
   };
 
@@ -430,7 +475,7 @@ export default function Wallet() {
     const toastId = toast.loading("Cancelando QR...");
 
     try {
-      const qr = sharedCredits.find(q => q.id === qrId);
+      const qr = sharedCredits.find((q) => q.id === qrId);
 
       const { error } = await supabase
         .from("shared_credits")
@@ -439,7 +484,7 @@ export default function Wallet() {
 
       if (error) throw error;
 
-      const newBalance = wallet.balance + qr.amount;
+      const newBalance = wallet.balance + (qr?.amount || 0);
 
       await supabase
         .from("digital_wallet")
@@ -448,8 +493,8 @@ export default function Wallet() {
 
       setWallet({ balance: newBalance });
       await loadSharedCredits(userId);
-      toast.success("QR cancelado y crédito devuelto", { id: toastId });
 
+      toast.success("QR cancelado y crédito devuelto", { id: toastId });
     } catch (error) {
       console.error("Error cancelando QR:", error);
       toast.error("Error al cancelar QR", { id: toastId });
@@ -460,7 +505,7 @@ export default function Wallet() {
     const toastId = toast.loading("Procesando QR...");
 
     try {
-      const qr = sharedCredits.find(q => q.id === qrId);
+      const qr = sharedCredits.find((q) => q.id === qrId);
       if (!qr) {
         toast.error("QR no encontrado", { id: toastId });
         return;
@@ -475,15 +520,14 @@ export default function Wallet() {
 
       await crearNotificacion({
         userId: qr.user_id,
-        type: 'qr_used',
-        title: '✅ QR Usado',
+        type: "qr_used",
+        title: "✅ QR Usado",
         message: `Tu QR de ${formatCurrency(qr.amount)} fue usado exitosamente`,
-        relatedId: qrId
+        relatedId: qrId,
       });
 
       await loadSharedCredits(userId);
       toast.success("QR usado correctamente", { id: toastId });
-
     } catch (error) {
       console.error("Error usando QR:", error);
       toast.error("Error al procesar QR", { id: toastId });
@@ -496,9 +540,10 @@ export default function Wallet() {
   const totalConFee = total + fee + propinaTotal;
   const puntosGenerados = Math.floor(total / 2);
 
-  const cuotas = tipoPago === "mensual"
-    ? Array.from({ length: 6 }, () => totalConFee / 6)
-    : Array.from({ length: 8 }, () => totalConFee / 8);
+  const cuotas =
+    tipoPago === "mensual"
+      ? Array.from({ length: 6 }, () => totalConFee / 6)
+      : Array.from({ length: 8 }, () => totalConFee / 8);
 
   const pagarOrden = () => {
     toast.success("Orden pagada correctamente");
@@ -518,7 +563,7 @@ export default function Wallet() {
     const { error } = await supabase.from("autorizados").insert({
       user_id: userId,
       nombre: nombreAutorizado,
-      monto: totalConFee
+      monto: totalConFee,
     });
 
     if (!error) {
@@ -530,15 +575,22 @@ export default function Wallet() {
   };
 
   const formatCurrency = (v) =>
-    new Intl.NumberFormat("es-PR", { style: "currency", currency: "USD" }).format(v);
+    new Intl.NumberFormat("es-PR", {
+      style: "currency",
+      currency: "USD",
+    }).format(v);
 
   const getTransactionIcon = (type) => {
     switch (type) {
-      case "purchase": return <TrendingDown className="text-red-500" size={20} />;
-      case "payment": return <TrendingDown className="text-orange-500" size={20} />;
+      case "purchase":
+        return <TrendingDown className="text-red-500" size={20} />;
+      case "payment":
+        return <TrendingDown className="text-orange-500" size={20} />;
       case "credit":
-      case "refund": return <TrendingUp className="text-green-500" size={20} />;
-      default: return <DollarSign size={20} />;
+      case "refund":
+        return <TrendingUp className="text-green-500" size={20} />;
+      default:
+        return <DollarSign size={20} />;
     }
   };
 
@@ -552,23 +604,90 @@ export default function Wallet() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "active": return "bg-green-100 text-green-700";
-      case "used": return "bg-blue-100 text-blue-700";
-      case "expired": return "bg-gray-100 text-gray-700";
-      case "cancelled": return "bg-red-100 text-red-700";
-      default: return "bg-gray-100 text-gray-700";
+      case "active":
+        return "bg-green-100 text-green-700";
+      case "used":
+        return "bg-blue-100 text-blue-700";
+      case "expired":
+        return "bg-gray-100 text-gray-700";
+      case "cancelled":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   const getStatusText = (status) => {
     switch (status) {
-      case "active": return "Activo";
-      case "used": return "Usado";
-      case "expired": return "Expirado";
-      case "cancelled": return "Cancelado";
-      default: return status;
+      case "active":
+        return "Activo";
+      case "used":
+        return "Usado";
+      case "expired":
+        return "Expirado";
+      case "cancelled":
+        return "Cancelado";
+      default:
+        return status;
     }
   };
+
+  // ✅ Helpers: badge + conteos + filtro
+  const getPlanType = (p) => p?.financing_plans?.source_type || "restaurant";
+
+  const getPlanBadge = (p) => {
+    const st = getPlanType(p);
+    if (st === "catering") {
+      return (
+        <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">
+          Catering
+        </span>
+      );
+    }
+    if (st === "restaurant") {
+      return (
+        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+          Restaurante
+        </span>
+      );
+    }
+    return (
+      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">
+        Plan
+      </span>
+    );
+  };
+
+  const paymentCounts = useMemo(() => {
+    return upcomingPayments.reduce(
+      (acc, p) => {
+        const st = getPlanType(p);
+        acc.all += 1;
+        if (st === "restaurant") acc.restaurant += 1;
+        if (st === "catering") acc.catering += 1;
+        return acc;
+      },
+      { all: 0, restaurant: 0, catering: 0 }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [upcomingPayments]);
+
+  const filteredUpcomingPayments = useMemo(() => {
+    if (planFilter === "all") return upcomingPayments;
+    return upcomingPayments.filter((p) => getPlanType(p) === planFilter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [upcomingPayments, planFilter]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-600 dark:text-gray-300">Cargando Wallet…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -703,9 +822,7 @@ export default function Wallet() {
             <h2 className="text-2xl font-bold mb-4">Compartir Crédito con QR</h2>
 
             <div className="mb-4">
-              <label className="block text-sm font-semibold mb-2">
-                Monto a compartir
-              </label>
+              <label className="block text-sm font-semibold mb-2">Monto a compartir</label>
               <input
                 type="number"
                 value={qrAmount}
@@ -721,9 +838,7 @@ export default function Wallet() {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-semibold mb-2">
-                Para quién (opcional)
-              </label>
+              <label className="block text-sm font-semibold mb-2">Para quién (opcional)</label>
               <input
                 type="text"
                 value={qrAssignedTo}
@@ -734,9 +849,7 @@ export default function Wallet() {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-semibold mb-2">
-                Vigencia (días)
-              </label>
+              <label className="block text-sm font-semibold mb-2">Vigencia (días)</label>
               <select
                 value={qrExpiration}
                 onChange={(e) => setQrExpiration(parseInt(e.target.value))}
@@ -796,7 +909,9 @@ export default function Wallet() {
             </div>
 
             <div className="mb-4 text-center">
-              <p className="text-2xl font-bold text-green-600">{formatCurrency(generatedQR.amount)}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {formatCurrency(generatedQR.amount)}
+              </p>
               {generatedQR.assigned_to && (
                 <p className="text-sm text-gray-600">Para {generatedQR.assigned_to}</p>
               )}
@@ -834,6 +949,7 @@ export default function Wallet() {
           <ShoppingCart size={20} />
           Pagar Orden
         </button>
+
         <button
           onClick={() => setActiveTab("historial")}
           className={`px-6 py-3 font-semibold transition flex items-center gap-2 whitespace-nowrap ${
@@ -845,6 +961,7 @@ export default function Wallet() {
           <WalletIcon size={20} />
           Historial
         </button>
+
         <button
           onClick={() => setActiveTab("tarjetas")}
           className={`px-6 py-3 font-semibold transition flex items-center gap-2 whitespace-nowrap ${
@@ -856,6 +973,7 @@ export default function Wallet() {
           <CreditCard size={20} />
           Tarjetas Virtuales
         </button>
+
         <button
           onClick={() => setActiveTab("compartir")}
           className={`px-6 py-3 font-semibold transition flex items-center gap-2 whitespace-nowrap ${
@@ -867,6 +985,7 @@ export default function Wallet() {
           <QrCode size={20} />
           Compartir Crédito
         </button>
+
         <button
           onClick={() => setActiveTab("metodos")}
           className={`px-6 py-3 font-semibold transition flex items-center gap-2 whitespace-nowrap ${
@@ -881,8 +1000,8 @@ export default function Wallet() {
       </div>
 
       {/* TAB: PAGAR ORDEN */}
-      {activeTab === "pagar" && (
-        !orden || orden.length === 0 ? (
+      {activeTab === "pagar" &&
+        (!orden || orden.length === 0 ? (
           <div className="text-center py-10">
             <h2 className="text-2xl font-bold">Tu orden está vacía</h2>
             <p className="text-gray-500">Agrega productos desde el menú</p>
@@ -891,12 +1010,36 @@ export default function Wallet() {
           <div>
             <div className="bg-white dark:bg-gray-800 shadow p-6 rounded-2xl mb-6">
               <h2 className="text-xl font-semibold mb-2">Resumen de Pago</h2>
-              <p>Total de la orden: <span className="font-medium">{formatCurrency(total)}</span></p>
-              <p>Fee DineFlexx (20%): <span className="font-medium">{formatCurrency(fee)}</span></p>
-              <p>Propina ({(propina * 100).toFixed(0)}%): <span className="font-medium">{formatCurrency(propinaTotal)}</span></p>
-              <p>Total a pagar: <span className="font-bold text-blue-600">{formatCurrency(totalConFee)}</span></p>
-              <p>Crédito disponible: <span className="text-green-600 font-semibold">{formatCurrency(availableCredit)}</span></p>
-              <p>Puntos por esta compra: <span className="text-purple-600 font-semibold">{puntosGenerados}</span></p>
+              <p>
+                Total de la orden:{" "}
+                <span className="font-medium">{formatCurrency(total)}</span>
+              </p>
+              <p>
+                Fee DineFlexx (20%):{" "}
+                <span className="font-medium">{formatCurrency(fee)}</span>
+              </p>
+              <p>
+                Propina ({(propina * 100).toFixed(0)}%):{" "}
+                <span className="font-medium">{formatCurrency(propinaTotal)}</span>
+              </p>
+              <p>
+                Total a pagar:{" "}
+                <span className="font-bold text-blue-600">
+                  {formatCurrency(totalConFee)}
+                </span>
+              </p>
+              <p>
+                Crédito disponible:{" "}
+                <span className="text-green-600 font-semibold">
+                  {formatCurrency(availableCredit)}
+                </span>
+              </p>
+              <p>
+                Puntos por esta compra:{" "}
+                <span className="text-purple-600 font-semibold">
+                  {puntosGenerados}
+                </span>
+              </p>
             </div>
 
             <div className="bg-white dark:bg-gray-800 shadow p-6 rounded-2xl mb-6">
@@ -904,7 +1047,9 @@ export default function Wallet() {
               <div className="flex gap-4 mb-4">
                 <button
                   className={`px-4 py-2 rounded-full border ${
-                    tipoPago === "mensual" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700"
+                    tipoPago === "mensual"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 dark:bg-gray-700"
                   }`}
                   onClick={() => setTipoPago("mensual")}
                 >
@@ -912,7 +1057,9 @@ export default function Wallet() {
                 </button>
                 <button
                   className={`px-4 py-2 rounded-full border ${
-                    tipoPago === "semanal" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700"
+                    tipoPago === "semanal"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 dark:bg-gray-700"
                   }`}
                   onClick={() => setTipoPago("semanal")}
                 >
@@ -921,7 +1068,9 @@ export default function Wallet() {
               </div>
               <ul className="text-sm list-disc list-inside">
                 {cuotas.map((c, i) => (
-                  <li key={i}>Cuota {i + 1}: {formatCurrency(c)}</li>
+                  <li key={i}>
+                    Cuota {i + 1}: {formatCurrency(c)}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -957,7 +1106,9 @@ export default function Wallet() {
                     if (!autorizado) setConfirmarAutorizado(true);
                   }}
                 />
-                <span className="text-sm">Autorizo a otra persona a usar mi crédito disponible</span>
+                <span className="text-sm">
+                  Autorizo a otra persona a usar mi crédito disponible
+                </span>
               </label>
             </div>
 
@@ -966,7 +1117,9 @@ export default function Wallet() {
                 <h2 className="text-lg font-semibold">
                   Tu referido: <span className="text-blue-600">{referido}</span>
                 </h2>
-                <p className="text-sm text-gray-400">Puntos acumulados por esta persona: {puntosReferido}</p>
+                <p className="text-sm text-gray-400">
+                  Puntos acumulados por esta persona: {puntosReferido}
+                </p>
               </div>
             )}
 
@@ -978,6 +1131,7 @@ export default function Wallet() {
               >
                 Pagar Orden
               </button>
+
               <button
                 onClick={generarWalletDigital}
                 className="bg-black hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded-2xl shadow"
@@ -994,16 +1148,19 @@ export default function Wallet() {
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
                   {autorizaciones.map((a, i) => (
                     <li key={i} className="py-3 flex justify-between">
-                      <span>{a.created_at.slice(0, 10)} - Autorizado a {a.nombre}</span>
-                      <span className="text-blue-600 font-medium">{formatCurrency(a.monto)}</span>
+                      <span>
+                        {a.created_at.slice(0, 10)} - Autorizado a {a.nombre}
+                      </span>
+                      <span className="text-blue-600 font-medium">
+                        {formatCurrency(a.monto)}
+                      </span>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
           </div>
-        )
-      )}
+        ))}
 
       {/* TAB: HISTORIAL */}
       {activeTab === "historial" && (
@@ -1015,26 +1172,79 @@ export default function Wallet() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <section className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                <Clock size={24} className="text-orange-500" />
-                Próximos Pagos
-              </h2>
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                  <Clock size={24} className="text-orange-500" />
+                  Próximos Pagos
+                </h2>
 
-              {upcomingPayments.length === 0 ? (
+                {/* ✅ Filtro Todos / Restaurante / Catering */}
+                <div className="flex items-center gap-2 mb-4">
+                  <button
+                    onClick={() => setPlanFilter("all")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                      planFilter === "all"
+                        ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900"
+                        : "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
+                    }`}
+                  >
+                    Todos ({paymentCounts.all})
+                  </button>
+
+                  <button
+                    onClick={() => setPlanFilter("restaurant")}
+                    disabled={paymentCounts.restaurant === 0}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                      planFilter === "restaurant"
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
+                    } disabled:opacity-50`}
+                    title={paymentCounts.restaurant === 0 ? "No hay cuotas de Restaurantes" : ""}
+                  >
+                    Restaurante ({paymentCounts.restaurant})
+                  </button>
+
+                  <button
+                    onClick={() => setPlanFilter("catering")}
+                    disabled={paymentCounts.catering === 0}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                      planFilter === "catering"
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
+                    } disabled:opacity-50`}
+                    title={paymentCounts.catering === 0 ? "No hay cuotas de Catering" : ""}
+                  >
+                    Catering ({paymentCounts.catering})
+                  </button>
+                </div>
+              </div>
+
+              {filteredUpcomingPayments.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">
-                  No tienes pagos pendientes
+                  No tienes pagos pendientes para este filtro
                 </p>
               ) : (
                 <ul className="space-y-3">
-                  {upcomingPayments.map((payment) => (
+                  {filteredUpcomingPayments.map((payment) => (
                     <motion.li
                       key={payment.id}
                       whileHover={{ scale: 1.02 }}
                       className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
                     >
                       <div className="flex-1">
-                        <p className="font-semibold">Cuota {payment.sequence}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold">Cuota {payment.sequence}</p>
+                          {getPlanBadge(payment)}
+                        </div>
+
+                        {/* ✅ Si guardas title en financing_plans lo mostramos */}
+                        {payment?.financing_plans?.title && (
+                          <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                            {payment.financing_plans.title}
+                          </p>
+                        )}
+
+                        <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
                           <Calendar size={14} />
                           {new Date(payment.due_date).toLocaleDateString("es-PR", {
                             day: "2-digit",
@@ -1043,6 +1253,7 @@ export default function Wallet() {
                           })}
                         </p>
                       </div>
+
                       <div className="text-right flex items-center gap-3">
                         <div>
                           <p className="font-bold text-lg">{formatCurrency(payment.amount)}</p>
@@ -1052,6 +1263,7 @@ export default function Wallet() {
                             <p className="text-xs text-red-600">Balance insuficiente</p>
                           )}
                         </div>
+
                         <button
                           onClick={() => pagarCuota(payment)}
                           disabled={wallet.balance < payment.amount}
@@ -1089,7 +1301,8 @@ export default function Wallet() {
                       </div>
                       <div>
                         <p className={`font-bold ${getTransactionColor(tx.type)}`}>
-                          {getTransactionSign(tx.type)}{formatCurrency(tx.amount)}
+                          {getTransactionSign(tx.type)}
+                          {formatCurrency(tx.amount)}
                         </p>
                       </div>
                     </div>
@@ -1138,7 +1351,7 @@ export default function Wallet() {
                   whileHover={{ scale: 1.02 }}
                   className="bg-gradient-to-br from-gray-800 to-gray-900 text-white p-6 rounded-xl shadow-xl relative overflow-hidden"
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16" />
 
                   <div className="mb-8">
                     <p className="text-xs opacity-70 mb-1">DINEFLEXX VIRTUAL</p>
@@ -1152,7 +1365,7 @@ export default function Wallet() {
                       {formatCardNumber(card.card_number)}
                     </p>
                     <button
-                      onClick={() => copiarAlPortapapeles(card.card_number, 'Número de tarjeta')}
+                      onClick={() => copiarAlPortapapeles(card.card_number, "Número de tarjeta")}
                       className="text-xs opacity-70 hover:opacity-100 flex items-center gap-1"
                     >
                       <Copy size={12} />
@@ -1171,7 +1384,9 @@ export default function Wallet() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs opacity-70">BALANCE</p>
-                      <p className="text-lg font-bold">{formatCurrency(card.credit_amount - card.used_amount)}</p>
+                      <p className="text-lg font-bold">
+                        {formatCurrency(card.credit_amount - card.used_amount)}
+                      </p>
                     </div>
                   </div>
 
@@ -1233,7 +1448,9 @@ export default function Wallet() {
                     <div>
                       <p className="text-2xl font-bold text-green-600">{formatCurrency(qr.amount)}</p>
                       {qr.assigned_to && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Para {qr.assigned_to}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Para {qr.assigned_to}
+                        </p>
                       )}
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(qr.status)}`}>
@@ -1271,11 +1488,11 @@ export default function Wallet() {
                           onClick={() => {
                             if (navigator.share) {
                               navigator.share({
-                                title: 'DineFlexx - Crédito',
-                                text: `Código: ${qr.code} - ${formatCurrency(qr.amount)}`
+                                title: "DineFlexx - Crédito",
+                                text: `Código: ${qr.code} - ${formatCurrency(qr.amount)}`,
                               });
                             } else {
-                              copiarAlPortapapeles(qr.code, 'Código');
+                              copiarAlPortapapeles(qr.code, "Código");
                             }
                           }}
                           className="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"
@@ -1326,7 +1543,9 @@ export default function Wallet() {
           </h2>
 
           {paymentMethods.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No tienes métodos de pago guardados</p>
+            <p className="text-gray-500 text-center py-8">
+              No tienes métodos de pago guardados
+            </p>
           ) : (
             <ul className="space-y-3">
               {paymentMethods.map((method) => (

@@ -19,7 +19,6 @@ import {
   AlertCircle
 } from "lucide-react"
 
-
 export default function Cart() {
   const navigate = useNavigate()
   const { 
@@ -38,12 +37,10 @@ export default function Cart() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
 
-
   // Calculate totals
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   const tax = subtotal * 0.115 // 11.5% IVU Puerto Rico
   const total = subtotal + tax
-
 
   // Payment plans
   const plans = {
@@ -76,13 +73,11 @@ export default function Cart() {
     }
   }
 
-
   const currentPlan = plans[selectedPlan]
   const firstPayment = parseFloat(currentPlan.installmentAmount)
   const pointsEarned = selectedPlan === "pago-completo" 
     ? Math.floor(total / 2) + 50 
     : Math.floor(total / 2)
-
 
   const handleCheckout = async () => {
     if (items.length === 0) return
@@ -139,15 +134,29 @@ export default function Cart() {
         frequency = "weekly"
       }
 
+      // ✅ IMPORTANTE: ahora guardamos user_id + metadata para badge
+      const planTitle = `Restaurante • Orden #${String(orderData.id).slice(0, 8)}`
+
       const { data: planData, error: planError } = await supabase
         .from("financing_plans")
         .insert({
+          // 🔒 Esto evita que "desaparezcan" en Wallet
+          user_id: user.id,
+
+          // relación existente
           order_id: orderData.id,
+
+          // totals
           total_amount: total,
           markup_percent: 0,
           installments: currentPlan.installments,
           frequency,
-          initial_due: initialDue.toISOString().split("T")[0]
+          initial_due: initialDue.toISOString().split("T")[0],
+
+          // ✅ para distinguir origen en Wallet
+          source_type: "restaurant",
+          source_ref_id: orderData.id, // puedes usar restaurant_id si quieres
+          title: planTitle
         })
         .select()
         .single()
@@ -230,7 +239,6 @@ export default function Cart() {
     }
   }
 
-
   // Empty cart
   if (items.length === 0) {
     return (
@@ -263,7 +271,6 @@ export default function Cart() {
     )
   }
 
-
   // Success Modal
   if (showSuccess) {
     return (
@@ -294,11 +301,9 @@ export default function Cart() {
     )
   }
 
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        
         {/* Header */}
         <div className="mb-6">
           <Link
@@ -313,7 +318,6 @@ export default function Cart() {
             Tu Carrito
           </h1>
         </div>
-
 
         {/* Credit Banner */}
         <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-6 mb-6 text-white">
@@ -338,7 +342,6 @@ export default function Cart() {
           </div>
         </div>
 
-
         {/* Error Message */}
         {errorMsg && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl mb-6 flex items-start gap-3">
@@ -347,9 +350,7 @@ export default function Cart() {
           </div>
         )}
 
-
         <div className="grid lg:grid-cols-3 gap-6">
-          
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
@@ -359,7 +360,6 @@ export default function Cart() {
                     🍽️
                   </div>
 
-
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                       {item.name}
@@ -367,7 +367,6 @@ export default function Cart() {
                     <p className="text-xl font-bold text-blue-600 mb-3">
                       ${(item.price * item.quantity).toFixed(2)}
                     </p>
-
 
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
@@ -386,7 +385,6 @@ export default function Cart() {
                         </button>
                       </div>
 
-
                       <button
                         onClick={() => eliminarItem(item.id)}
                         className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm"
@@ -401,13 +399,10 @@ export default function Cart() {
             ))}
           </div>
 
-
           {/* Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 sticky top-4">
-              
               <h2 className="text-xl font-bold mb-6">Resumen</h2>
-
 
               <div className="space-y-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between text-gray-600 dark:text-gray-400">
@@ -420,12 +415,10 @@ export default function Cart() {
                 </div>
               </div>
 
-
               <div className="flex justify-between text-xl font-bold mb-2">
                 <span>Total</span>
                 <span className="text-blue-600">${total.toFixed(2)}</span>
               </div>
-
 
               {/* Primer Pago Destacado */}
               <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-6">
@@ -437,7 +430,6 @@ export default function Cart() {
                   </p>
                 )}
               </div>
-
 
               {/* Payment Plans */}
               <div className="space-y-3 mb-6">
@@ -476,7 +468,6 @@ export default function Cart() {
                 })}
               </div>
 
-
               <button
                 onClick={handleCheckout}
                 disabled={processing || credit < firstPayment}
@@ -494,7 +485,6 @@ export default function Cart() {
                   </>
                 )}
               </button>
-
 
               {credit < firstPayment && (
                 <p className="text-sm text-red-600 text-center mt-3">
